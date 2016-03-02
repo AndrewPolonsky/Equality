@@ -1,6 +1,6 @@
 {-# OPTIONS --no-positivity-check #-}
 
-module EqSim where
+module Universes.EqSim where
 open import Data.Product
 
 -- Universe with Eq defined inductively, ∼ defined recursively, Rel defined as T ∘ ∼

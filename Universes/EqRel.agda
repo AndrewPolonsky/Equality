@@ -1,6 +1,6 @@
 {-# OPTIONS --no-positivity-check #-}
 
-module UT where
+module Universes.EqRel where
 open import Data.Product
 
 -- A universe with Eq defined inductively, Rel defined recursively
