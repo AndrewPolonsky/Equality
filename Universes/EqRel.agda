@@ -1,9 +1,10 @@
 {-# OPTIONS --no-positivity-check #-}
 
-module Equality where
+module Universes.EqRel where
+open import Data.Product
 
-data Σ {A : Set} (B : A → Set) : Set where
-  _,_ : ∀ a → B a → Σ B
+-- A universe with Eq defined inductively, Rel defined recursively
+-- and ∼ introduced as a reflection of Rel
 
 mutual
   data U : Set where
@@ -16,7 +17,7 @@ mutual
   T : U → Set
   T * = U
   T (π A B) = ∀ a → T (B a)
-  T (σ A B) = Σ (λ a → T (B a))
+  T (σ A B) = Σ[ a ∈ T A ] T (B a)
   T (A ≃ B) = Eq A B
   T (a ∼〈 e 〉 b) = Rel e a b
 
@@ -40,9 +41,11 @@ mutual
   Rel r* A B = Eq A B
   Rel (π* A* B*) f f' = ∀ a a' (a* : Rel A* a a') → 
     Rel (B* a a' a*) (f a) (f' a')
-  Rel (σ* A* B*) (p₁ , p₂) (p'₁ , p'₂) = Σ (λ (x* : Rel A* p₁ p'₁) → 
-    Rel (B* p₁ p'₁ x*) p₂ p'₂)
+  Rel (σ* A* B*) (p₁ , p₂) (p'₁ , p'₂) = Σ[ x* ∈ Rel A* p₁ p'₁ ] Rel (B* p₁ p'₁ x*) p₂ p'₂
   Rel (A* ≃* B*) e e' = ∀ a a' (a* : Rel A* a a') b b' (b* : Rel B* b b') → 
     Eq (a ∼〈 e 〉 b) (a' ∼〈 e' 〉 b')
   Rel (∼* A* B* {e} {e'} e* {a} {a'} a* {b} {b'} b*) γ γ' = 
     Rel {a ∼〈 e 〉 b} {a' ∼〈 e' 〉 b'} (e* a a' a* b b' b*) γ γ'
+
+syntax π A (λ a → B) = π[ a ∶ A ] B
+syntax σ A (λ a → B) = σ[ a ∶ A ] B
