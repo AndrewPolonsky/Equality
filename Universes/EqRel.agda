@@ -46,3 +46,6 @@ mutual
     Eq (a ∼〈 e 〉 b) (a' ∼〈 e' 〉 b')
   Rel (∼* A* B* {e} {e'} e* {a} {a'} a* {b} {b'} b*) γ γ' = 
     Rel {a ∼〈 e 〉 b} {a' ∼〈 e' 〉 b'} (e* a a' a* b b' b*) γ γ'
+
+syntax π A (λ a → B) = π[ a ∶ A ] B
+syntax σ A (λ a → B) = σ[ a ∶ A ] B

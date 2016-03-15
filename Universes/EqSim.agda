@@ -43,3 +43,6 @@ mutual
     π A (λ a → π A' (λ a' → π (a ∼〈 A* 〉 a') (λ a* → 
     π B (λ b → π B' (λ b' → π (b ∼〈 B* 〉 b') (λ b* → 
     (a ∼〈 e 〉 b) ≃ (a' ∼〈 e' 〉 b')))))))
+
+syntax π A (λ a → B) = π[ a ∶ A ] B
+syntax σ A (λ a → B) = σ[ a ∶ A ] B
