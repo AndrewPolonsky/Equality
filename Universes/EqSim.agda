@@ -32,6 +32,7 @@ mutual
   Rel : ∀ {A} {B} → Eq A B → T A → T B → Set
   Rel e a b = T (a ∼〈 e 〉 b)
 
+  infix 60 _∼〈_〉_
   _∼〈_〉_ : ∀ {A} {B} → T A → Eq A B → T B → U
   A ∼〈 r* 〉 B = A ≃ B
   f ∼〈 π* {A} {A'} A* {B} {B'} B* 〉 g = π A (λ x → π A' (λ x' → 
