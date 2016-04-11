@@ -68,10 +68,13 @@ record Iso (A B : U) : Set₁ where
 
 decode : ∀ {A} {B} → Eq A B → Iso A B
 decode r* = {!!}
+decode (σ* A* B*) = record {
+  R = λ p p' → p ~⟨ σ* A* B* ⟩ p';
+  R+ = λ p → record {
+    point = 
 decode (π* A* B*) = record { 
   R = λ f g → f ∼〈 π* A* B* 〉 g; 
   R+ = λ f → record { 
     point = (λ a' → {!!}) , -- FAIL: Need Eq (B a) (B' a') -> T (B a) -> T (B' a')
     {!!}; path = {!!} }; R- = {!!} }
-decode (σ* A* B*) = {!!}
 decode (A* ≃* B*) = {!!}

@@ -4,22 +4,25 @@ open import Function using (_∘_)
 open import Data.Unit
 open import Data.Product
 open import Data.Nat
---open import Universes.EqRel
-open import Universes.EqSim
+open import EqSim
 
 mutual
   infixl 70 _,,_
+  -- The collection of contexts Γ
   data Context : Set where
     〈〉 : Context
-    _,,_ : ∀ Γ → (⟦ Γ ⟧C → U) → Context
+    _,,_ : ∀ Γ → Type Γ → Context
 
+  -- The collection of Γ-types
+  Type : Context → Set
+  Type Γ = ⟦ Γ ⟧C → U
+
+  -- The collection of Γ-instances
   ⟦_⟧C : Context → Set
   ⟦ 〈〉 ⟧C = Unit
   ⟦ Γ ,, A ⟧C = Σ[ γ ∈ ⟦ Γ ⟧C ] T (A γ)
 
-Type : Context → Set
-Type Γ = ⟦ Γ ⟧C → U
-
+-- The elements of a Γ-type on the meta-level
 ⟦_⟧T : ∀ {Γ} → Type Γ → Set
 ⟦ A ⟧T = ∀ γ → T (A γ)
 
@@ -48,6 +51,7 @@ mutual
   syntax tjt Γ (λ γ → A) = γ ∶ Γ ⊢ A
 
   data tj (Γ : Context) : Type Γ → Set where -- "Typing judgement"
+
     star  : 
 
     -------------
