@@ -6,39 +6,111 @@ open import Function using (_∘_)
 open import Data.Unit
 open import Data.Product
 open import Data.Nat
+
 -- open import stratUniv
+
+_⇔_ : Set → Set → Set
+p ⇔ q = (p → q) × (q → p)
 
 record Setoid : Set where
   field
     El : Set
-    _≃_ : El → El → Set
+    E : El → El → Set
 
 record Groupoid : Set where
   field
     Ob : Set
     _≃_ : Ob → Ob → Setoid
 
-El = Setoid.El
 Ob = Groupoid.Ob
-_∋_≃_ : ∀ G → Ob G → Ob G → Set
-G ∋ x ≃ y = El (Groupoid._≃_ G x y)
+_∋_≃_ : ∀ G → Ob G → Ob G → Setoid
+G ∋ x ≃ y = Groupoid._≃_ G x y
+
+postulate ReflG : ∀ (G : Groupoid) (x : Ob G) → Setoid.El (G ∋ x ≃ x)
+
+record ContrS (S : Setoid) : Set where
+  open Setoid S
+  field
+    c : El
+    p : ∀ (x : El) → E x c
+
+open Setoid using (El ; E)
+
+record ContrG (G : Groupoid) : Set where
+  field
+    c : Ob G
+    p : ∀ (x : Ob G) → El (G ∋ x ≃ c)
+    
+Sigma-SP : ∀ (S : Setoid) → (El S → Set) → Setoid
+Sigma-SP S P = 
+  record { El = Σ[ s ∈ El S ] (P s); E = λ x y → Setoid.E S (proj₁ x) (proj₁ y) }
 
 record Iso (S S' : Setoid) : Set where
   field
-    _⁺ : El S → El S'
-    _⁻ : El S' → El S
+    R : El S → El S' → Set
+    R+ : ∀ (x : El S)  → ContrS (Sigma-SP S' (λ y → R x y))
+    R- : ∀ (y : El S') → ContrS (Sigma-SP S  (λ x → R x y))
 
-postulate Equiv : Groupoid → Groupoid → Set
+ISO : ∀ (S S' : Setoid) → Setoid
+ISO S S' = record { El = Iso S S'; E = λ i j → ∀ x y → (Iso.R i x y) ⇔ (Iso.R j x y) }
+
+record FunS (S S' : Setoid) : Set where
+  field
+    app : El S → El S'
+    app1 : ∀ (x y : El S) → Setoid.E S x y → Setoid.E S' (app x) (app y)
+
+FUNS : ∀ (S S' : Setoid) → Setoid
+FUNS S S' = record {
+  El = FunS S S';
+  E = λ f g → ∀ x x' → Setoid.E S x x' → Setoid.E S' (FunS.app f x) (FunS.app g x') }
+
+PRODS : ∀ (S S' : Setoid) → Setoid
+PRODS S S' = record {
+  El = El S × El S';
+  E = E' } where
+  E' : El S × El S' → El S × El S' → Set
+  E' (s , s') (t , t') = Setoid.E S s t × Setoid.E S' s' t'
+
+PRODG : ∀ (G G' : Groupoid) → Groupoid
+PRODG G G' = record {
+  Ob = Ob G × Ob G';
+  _≃_ = Hom} where
+  Hom : Ob G × Ob G' → Ob G × Ob G' → Setoid
+  Hom (g1 , g1') (g2 , g2') = PRODS (G ∋ g1 ≃ g2) (G' ∋ g1' ≃ g2')
+
+record Fibra-GS (B : Groupoid) : Set where
+  field
+    FibOb : ∀ (x : Ob B) → Setoid
+    Sub : ∀ (x y : Ob B) → FunS (B ∋ x ≃ y) (ISO (FibOb x) (FibOb y))
+    
+Sigma-GS : ∀ (G : Groupoid) → (Fibra-GS G) → Groupoid
+Sigma-GS G S =
+  record { Ob = Σ[ g ∈ Ob G ] El (Fibra-GS.FibOb S g); _≃_ = eq } where
+    eq : Σ[ g ∈ Ob G ] El (Fibra-GS.FibOb S g) → Σ[ g ∈ Ob G ] El (Fibra-GS.FibOb S g) → Setoid
+    eq (g , s) (g' , s') = Sigma-SP (G ∋ g ≃ g') (λ p → Iso.R (FunS.app (Fibra-GS.Sub S g g') p) s s')
+
+Fibra_p1 : ∀ { G G' : Groupoid} → Fibra-GS (PRODG G G') → Ob G' → Fibra-GS G
+Fibra_p1 {G} {G'} F Y = record {
+    FibOb = λ x → Fibra-GS.FibOb F (x , Y);
+    Sub   = λ x y → record { app = λ p → FunS.app (Fibra-GS.Sub F (x , Y) (y , Y)) (p , ReflG G' Y);
+                             app1 = λ x₁ y₁ x₂ x₃ y₂ → (λ x₄ → {!!}) , (λ x₄ → {!!}) } }
+
+record Equiv (G G' : Groupoid) : Set where
+  field
+    R : Fibra-GS (PRODG G G')
+    R+ : ∀ (x : Ob G) → ContrG (Sigma-GS G' {!R !}) -- ContrG (Sigma-GS G' ?)
+    R- : ∀ (y : Ob G') → ContrG (Sigma-GS G (Fibra_p1 {G} {G'} R y))
+
 
 UnitS : Setoid
-UnitS = record { El = Unit; _≃_ = λ x x₁ → Unit }
+UnitS = record { El = Unit; E = λ x x₁ → Unit }
 UnitG : Groupoid
 UnitG = record { Ob = Unit; _≃_ = λ x x₁ → UnitS }
 
 record Fibration (G : Groupoid) : Set where
   field
     Fib : Ob G → Groupoid
-    Sub : ∀ (x y : Groupoid.Ob G) → G ∋ x ≃ y → Equiv (Fib x) (Fib y)
+    Sub : ∀ (x y : Groupoid.Ob G) → El (G ∋ x ≃ y) → Equiv (Fib x) (Fib y)
 
 postulate SigmaG : ∀ (G : Groupoid) → Fibration G → Groupoid
 
