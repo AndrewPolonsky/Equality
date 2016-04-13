@@ -1,75 +1,57 @@
 {-# OPTIONS --type-in-type #-}
-
 module groupoid where
 
-open import Function using (_∘_)
+open import setoid
+
 open import Data.Unit
 open import Data.Product
-open import Data.Nat
-
--- open import stratUniv
-
-_⇔_ : Set → Set → Set
-p ⇔ q = (p → q) × (q → p)
-
-record Setoid : Set where
-  field
-    El : Set
-    E : El → El → Set
+-- open import Data.Nat
 
 record Groupoid : Set where
   field
     Ob : Set
     _≃_ : Ob → Ob → Setoid
+    rr : ∀ (x : Ob) → El (x ≃ x)
+    ≃* : ∀ {x x' y y' : Ob} → FunS (x ≃ x') (FUNS (y ≃ y') (ISO (x ≃ y) (x' ≃ y')))
 
-Ob = Groupoid.Ob
-_∋_≃_ : ∀ G → Ob G → Ob G → Setoid
-G ∋ x ≃ y = Groupoid._≃_ G x y
-
-postulate ReflG : ∀ (G : Groupoid) (x : Ob G) → Setoid.El (G ∋ x ≃ x)
-
-record ContrS (S : Setoid) : Set where
-  open Setoid S
-  field
-    c : El
-    p : ∀ (x : El) → E x c
-
-open Setoid using (El ; E)
+open Groupoid using (Ob ; rr) renaming (_≃_ to _∋_≃_)
 
 record ContrG (G : Groupoid) : Set where
   field
     c : Ob G
     p : ∀ (x : Ob G) → El (G ∋ x ≃ c)
     
-Sigma-SP : ∀ (S : Setoid) → (El S → Set) → Setoid
-Sigma-SP S P = 
-  record { El = Σ[ s ∈ El S ] (P s); E = λ x y → Setoid.E S (proj₁ x) (proj₁ y) }
-
-record Iso (S S' : Setoid) : Set where
+record Fibra-GS (B : Groupoid) : Set where
   field
-    R : El S → El S' → Set
-    R+ : ∀ (x : El S)  → ContrS (Sigma-SP S' (λ y → R x y))
-    R- : ∀ (y : El S') → ContrS (Sigma-SP S  (λ x → R x y))
+    Fib : ∀ (x : Ob B) → Setoid
+    Sub : ∀ (x y : Ob B) → FunS (B ∋ x ≃ y) (ISO (Fib x) (Fib y))
+    Sub-rr : ∀ (x : Ob B) → E (ISO (Fib x) (Fib x)) (FunS.app (Sub x x) (rr B x)) (id_iso (Fib x))
+  Sub-id : ∀ (x : Ob B) (s : El (Fib x)) → Fibra-SP.Fib (Iso.R (FunS.app (Sub x x) (rr B x))) (s , s)
+  Sub-id = λ x s → proj₂ (Sub-rr x s s) (r (Fib x) s)
 
-ISO : ∀ (S S' : Setoid) → Setoid
-ISO S S' = record { El = Iso S S'; E = λ i j → ∀ x y → (Iso.R i x y) ⇔ (Iso.R j x y) }
-
-record FunS (S S' : Setoid) : Set where
-  field
-    app : El S → El S'
-    app1 : ∀ (x y : El S) → Setoid.E S x y → Setoid.E S' (app x) (app y)
-
-FUNS : ∀ (S S' : Setoid) → Setoid
-FUNS S S' = record {
-  El = FunS S S';
-  E = λ f g → ∀ x x' → Setoid.E S x x' → Setoid.E S' (FunS.app f x) (FunS.app g x') }
-
-PRODS : ∀ (S S' : Setoid) → Setoid
-PRODS S S' = record {
-  El = El S × El S';
-  E = E' } where
-  E' : El S × El S' → El S × El S' → Set
-  E' (s , s') (t , t') = Setoid.E S s t × Setoid.E S' s' t'
+Sigma-GS : ∀ (G : Groupoid) → (Fibra-GS G) → Groupoid
+Sigma-GS G S =
+  record { Ob = Σ[ g ∈ Ob G ] El (Fibra-GS.Fib S g);
+           _≃_ = eq;
+           rr = λ x → rr G (proj₁ x) , Fibra-GS.Sub-id S (proj₁ x) (proj₂ x) ;
+           ≃* = ≃̂ _ _ _ _ } where
+    eq : Σ[ g ∈ Ob G ] El (Fibra-GS.Fib S g) → Σ[ g ∈ Ob G ] El (Fibra-GS.Fib S g) → Setoid
+    eq (g , s) (g' , s') =
+      Sigma-SP (G ∋ g ≃ g') (record { 
+        Fib = (λ p → Fibra-SP.Fib (Iso.R (Fibra-GS.Sub S g g' · p)) (s , s')); 
+        Sub = λ x y x₁ → FunS.app1 (Fibra-GS.Sub S g g') x y x₁ s s' })
+    ≃̂ : ∀ (x x' y y' : Σ-syntax (Ob G) (λ g → El (Fibra-GS.Fib S g))) →
+           FunS (eq x x') (FUNS (eq y y') (ISO (eq x y) (eq x' y')))
+    ≃̂ (g1 , s1) (g1' , s1') (g2 , s2) (g2' , s2') = record {
+      app = λ { (g1* , s1*) → record {
+              app = λ {(g2* , s2*) → record {
+                R = record { Fib = λ {((g12 , s12) , (g12' , s12')) → {!!}};
+                             Sub = {!!} };
+                R+ = {!!};
+                R- = {!!} }};
+              app1 = {!!} } };
+      app1 = {!!} }
+    
 
 PRODG : ∀ (G G' : Groupoid) → Groupoid
 PRODG G G' = record {
@@ -78,20 +60,11 @@ PRODG G G' = record {
   Hom : Ob G × Ob G' → Ob G × Ob G' → Setoid
   Hom (g1 , g1') (g2 , g2') = PRODS (G ∋ g1 ≃ g2) (G' ∋ g1' ≃ g2')
 
-record Fibra-GS (B : Groupoid) : Set where
-  field
-    FibOb : ∀ (x : Ob B) → Setoid
-    Sub : ∀ (x y : Ob B) → FunS (B ∋ x ≃ y) (ISO (FibOb x) (FibOb y))
-    
-Sigma-GS : ∀ (G : Groupoid) → (Fibra-GS G) → Groupoid
-Sigma-GS G S =
-  record { Ob = Σ[ g ∈ Ob G ] El (Fibra-GS.FibOb S g); _≃_ = eq } where
-    eq : Σ[ g ∈ Ob G ] El (Fibra-GS.FibOb S g) → Σ[ g ∈ Ob G ] El (Fibra-GS.FibOb S g) → Setoid
-    eq (g , s) (g' , s') = Sigma-SP (G ∋ g ≃ g') (λ p → Iso.R (FunS.app (Fibra-GS.Sub S g g') p) s s')
+postulate ReflG : ∀ (G : Groupoid) (x : Ob G) → Setoid.El (G ∋ x ≃ x)
 
 Fibra_p1 : ∀ { G G' : Groupoid} → Fibra-GS (PRODG G G') → Ob G' → Fibra-GS G
 Fibra_p1 {G} {G'} F Y = record {
-    FibOb = λ x → Fibra-GS.FibOb F (x , Y);
+    Fib = λ x → Fibra-GS.Fib F (x , Y);
     Sub   = λ x y → record { app = λ p → FunS.app (Fibra-GS.Sub F (x , Y) (y , Y)) (p , ReflG G' Y);
                              app1 = λ x₁ y₁ x₂ x₃ y₂ → (λ x₄ → {!!}) , (λ x₄ → {!!}) } }
 
@@ -120,7 +93,7 @@ data Context : Set
 Type : Context → Set
 ⟦_⟧C : Context → Groupoid
 
-postulate FibOb : (G : Groupoid) → Fibration G → Ob G → Groupoid
+postulate Fib : (G : Groupoid) → Fibration G → Ob G → Groupoid
 -- The collection of contexts Γ
 
 data Context where
@@ -136,7 +109,7 @@ Type Γ = Fibration (⟦ Γ ⟧C)
 
 -- The elements of a Γ-type on the meta-level
 ⟦_⟧T : ∀ {Γ} → Type Γ → Set
-⟦_⟧T {Γ} A = ∀ γ → Ob (FibOb ⟦ Γ ⟧C A γ)
+⟦_⟧T {Γ} A = ∀ γ → Ob (Fib ⟦ Γ ⟧C A γ)
 
 {-
 data Var : ∀ (Γ : Context) (A : Type Γ) → Set where

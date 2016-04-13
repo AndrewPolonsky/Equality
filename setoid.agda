@@ -46,7 +46,7 @@ record Fibra-SP (B : Setoid) : Set where
     Fib : ∀ (x : El B) → Set
     Sub : ∀ (x y : El B) → E B x y → (Fib x ⇔ Fib y)
 
-open Fibra-SP public
+open Fibra-SP
     
 Sigma-SP : ∀ (S : Setoid) → (Fibra-SP S) → Setoid
 Sigma-SP S P = record {
@@ -113,6 +113,9 @@ ISO S S' = record {
   (λ f-is-h → λ x y → proj₁ (⇔* (f-is-g x y) (h-is-k x y)) (f-is-h x y) ),
   (λ g-is-k → λ x y → proj₂ (⇔* (f-is-g x y) (h-is-k x y)) (g-is-k x y) )}
 
+_~<_>_ : ∀ {S S'} → El S → (i : Iso S S') → El S' → Set
+a ~< i > b =  Fibra-SP.Fib (Iso.R i) (a , b)
+
 id_iso : ∀ (S : Setoid) → Iso S S
 id_iso = λ S → record { R = diagS S; R+ = ax4S S; R- = ax4S' S }
 
@@ -120,6 +123,12 @@ record FunS (S S' : Setoid) : Set where
   field
     app : El S → El S'
     app1 : ∀ (x y : El S) → Setoid.E S x y → Setoid.E S' (app x) (app y)
+
+infix 10 _·_
+_·_ : ∀ { S T : Setoid } → FunS S T → El S → El T
+f · a = FunS.app f a
+
+
 
 FUNS : ∀ (S S' : Setoid) → Setoid
 FUNS S S' = record {
