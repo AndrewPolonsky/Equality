@@ -1,20 +1,8 @@
 {-# OPTIONS --type-in-type #-}
--- todo: change all \sim to ~
--- todo: app1 >> app* 
 
 module setoid where
 
-open import Data.Product
-
-_⇔_ : Set → Set → Set
-p ⇔ q = (p → q) × (q → p)
-refl_p : ∀ {p : Set} → p ⇔ p
-refl_p = (λ x → x) , (λ x → x)
-
-⇔* : ∀ {p1 p2} → (p1 ⇔ p2) → ∀ {q1 q2} → (q1 ⇔ q2) → (p1 ⇔ q1) ⇔ (p2 ⇔ q2)
-⇔* {p1} {p2} p12 {q1} {q2} q12 = (
-  (λ x → (λ z → proj₁ q12 (proj₁ x (proj₂ p12 z))) , (λ z → proj₁ p12 (proj₂ x (proj₂ q12 z)))) ,
-  (λ x → (λ z → proj₂ q12 (proj₁ x (proj₁ p12 z))) , (λ z → proj₂ p12 (proj₂ x (proj₁ q12 z)))) )
+open import prop
 
 record Setoid : Set where
   field
@@ -25,8 +13,10 @@ record Setoid : Set where
   sym : ∀ {x y : El} → E x y → E y x
   sym {x} {y} p = proj₁ (E* p (r x)) (r x)
 
-_⁻¹ : ∀ {S} {x} {y} → Setoid.E S x y → Setoid.E S y x
-_⁻¹ {S} {x} {y} = Setoid.sym S
+open Setoid public
+
+_⁻¹ : ∀ {S} {x} {y} → E S x y → E S y x
+_⁻¹ {S} {x} {y} = sym S
 
 Prop:Set : Setoid
 Prop:Set = record {
@@ -34,97 +24,73 @@ Prop:Set = record {
   E = _⇔_;
   r = λ S → refl_p;
   E* = ⇔* }
-
-record ContrS (S : Setoid) : Set where
-  open Setoid S
-  field
-    c : El
-    p : ∀ (x : El) → E x c
-
-open Setoid public
     
-record Fibra-SP (B : Setoid) : Set where
+record ContrS (S : Setoid) : Set where
+  field
+    c : El S
+    p : ∀ (x : El S) → E S x c
+
+record FibSP (B : Setoid) : Set where
   field
     Fib : ∀ (x : El B) → Set
     Sub : ∀ (x y : El B) → E B x y → (Fib x ⇔ Fib y)
-
-open Fibra-SP
+open FibSP
     
-Sigma-SP : ∀ (S : Setoid) → (Fibra-SP S) → Setoid
+Sigma-SP : ∀ (S : Setoid) → (FibSP S) → Setoid
 Sigma-SP S P = record {
-  El = Σ[ s ∈ El S ] (Fibra-SP.Fib P s);
-  E = λ x y → Setoid.E S (proj₁ x) (proj₁ y);
+  El = Σ[ s ∈ El S ] (FibSP.Fib P s);
+  E = λ x y → E S (proj₁ x) (proj₁ y);
   r = λ x → r S (proj₁ x);
-  E* = λ {x} {x'} x* {y} {y'} y* → E*0 x x' x* y y' y* } where
-  E*0 : (x x' : Σ-syntax (El S) (λ s → Fibra-SP.Fib P s)) →
-      E S (proj₁ x) (proj₁ x') →
-      (y y' : Σ-syntax (El S) (λ s → Fibra-SP.Fib P s)) →
-      E S (proj₁ y) (proj₁ y') →
-      E S (proj₁ x) (proj₁ y) ⇔ E S (proj₁ x') (proj₁ y')
-  E*0 (x , xp) (x' , xp') x* (y , yp) (y' , yp') y*  =
-    (λ x₁ → proj₁ (E* S x* y*) x₁) , (λ x₁ → proj₂ (E* S x* y*) x₁)
+  E* = λ x* y* → E* S x* y*}
 
 PRODS : ∀ (S S' : Setoid) → Setoid
 PRODS S S' = record {
   El = El S × El S';
-  E = Ê ;
-  r = λ x → r̂ x;
-  E* = λ x* y* → Ê* _ _ x* _ _ y* } where
-  Ê : El S × El S' → El S × El S' → Set
-  Ê x y = Setoid.E S (proj₁ x) (proj₁ y) × Setoid.E S' (proj₂ x) (proj₂ y)
-  r̂ : ∀ x → Ê x x
-  r̂ (x , x') = (r S x , r S' x')
-  Ê* : ∀ (x x' : El S × El S') → Ê x x' →
-        (y y' : El S × El S') → Ê y y' → Ê x y ⇔ Ê x' y'
-  Ê* (x1 , x2) (x1' , x2') (x1* , x2*) (y1 , y2) (y1' , y2') (y1* , y2*) =
-    (λ x → (proj₁ (E* S x1* y1*) (proj₁ x)) , (proj₁ (E* S' x2* y2*) (proj₂ x))) ,
-    (λ x → (proj₂ (E* S x1* y1*) (proj₁ x)) , (proj₂ (E* S' x2* y2*) (proj₂ x))) 
+  E = λ x y → PRODP (E S (proj₁ x) (proj₁ y)) (E S' (proj₂ x) (proj₂ y)) ;
+  r = λ { (x , x') → r S x , r S' x'};
+  E* = λ { (x1* , x2*) (y1* , y2*) → PRODP* (E* S x1* y1*) (E* S' x2* y2*) }}
 
-Fibra-SP-p1 : ∀ {S T : Setoid} → Fibra-SP (PRODS S T) → El T → Fibra-SP S
-Fibra-SP-p1 {S} {T} F t = 
-  record { Fib = λ s → Fib F (s , t); Sub = λ x y p → Sub F (x , t) (y , t) (p , (r T t)) }
-
-Fibra-SP-p2 : ∀ {S T : Setoid} → Fibra-SP (PRODS S T) → El S → Fibra-SP T
-Fibra-SP-p2 {S} {T} F s = 
-  record { Fib = λ t → Fib F (s , t); Sub = λ x y p → Sub F (s , x) (s , y) (r S s , p) }
-
-diagS : ∀ (S : Setoid) → Fibra-SP (PRODS S S) 
+diagS : ∀ (S : Setoid) → FibSP (PRODS S S) 
 diagS = λ S → record {
   Fib = λ x → E S (proj₁ x) (proj₂ x);
   Sub = λ x y x₁ → E* S (proj₁ x₁) (proj₂ x₁) }
 
-ax4S : ∀ (S : Setoid) → (x : El S) → ContrS (Sigma-SP S (Fibra-SP-p2 {S} {S} (diagS S) x) )
+FibSP-p1 : ∀ {S T : Setoid} → FibSP (PRODS S T) → El T → FibSP S
+FibSP-p1 {S} {T} F t = 
+  record { Fib = λ s → Fib F (s , t); Sub = λ x y p → Sub F (x , t) (y , t) (p , (r T t)) }
+
+FibSP-p2 : ∀ {S T : Setoid} → FibSP (PRODS S T) → El S → FibSP T
+FibSP-p2 {S} {T} F s = 
+  record { Fib = λ t → Fib F (s , t); Sub = λ x y p → Sub F (s , x) (s , y) (r S s , p) }
+
+ax4S : ∀ (S : Setoid) → (x : El S) → ContrS (Sigma-SP S (FibSP-p2 {S} {S} (diagS S) x) )
 ax4S S x = record { c = x , r S x; p = λ x → sym S (proj₂ x) }
 
-ax4S' : ∀ (S : Setoid) → (x : El S) → ContrS (Sigma-SP S (Fibra-SP-p1 {S} {S} (diagS S) x) )
+ax4S' : ∀ (S : Setoid) → (x : El S) → ContrS (Sigma-SP S (FibSP-p1 {S} {S} (diagS S) x) )
 ax4S' S x = record { c = x , r S x; p = proj₂ }
 
 record Iso (S S' : Setoid) : Set where
   field
-    R : Fibra-SP (PRODS S S')
-    R+ : ∀ (x : El S)  → ContrS (Sigma-SP S' ((Fibra-SP-p2 {S} {S'} R x)))
-    R- : ∀ (y : El S') → ContrS (Sigma-SP S  (Fibra-SP-p1 {S} {S'} R y))
+    R : FibSP (PRODS S S')
+    R+ : ∀ (x : El S)  → ContrS (Sigma-SP S' ((FibSP-p2 {S} {S'} R x)))
+    R- : ∀ (y : El S') → ContrS (Sigma-SP S  (FibSP-p1 {S} {S'} R y))
 
 ISO : ∀ (S S' : Setoid) → Setoid
 ISO S S' = record {
   El = Iso S S';
   E = λ i j → ∀ x y → (Fib (Iso.R i) (x , y)) ⇔ (Fib (Iso.R j) (x , y));
   r = λ i → λ x y → refl_p;
---  E* = λ {f} {g} f-is-g {h} {k} h-is-k → ? }
-  E* = λ {f} {g} f-is-g {h} {k} h-is-k →
-  (λ f-is-h → λ x y → proj₁ (⇔* (f-is-g x y) (h-is-k x y)) (f-is-h x y) ),
-  (λ g-is-k → λ x y → proj₂ (⇔* (f-is-g x y) (h-is-k x y)) (g-is-k x y) )}
+  E* = λ f-is-g h-is-k → flip f-is-g h-is-k }
 
 infix 20 _~<_>_
 _~<_>_ : ∀ {S S'} → El S → (i : Iso S S') → El S' → Set
-a ~< i > b =  Fibra-SP.Fib (Iso.R i) (a , b)
+a ~< i > b =  FibSP.Fib (Iso.R i) (a , b)
 
 id-iso : ∀ (S : Setoid) → Iso S S
 id-iso = λ S → record { R = diagS S; R+ = ax4S S; R- = ax4S' S }
 
-postulate Iso* : ∀ {A A' : Setoid} (A* : Iso A A') {B B' : Setoid} (B* : Iso B B') →
+Iso* : ∀ {A A' : Setoid} (A* : Iso A A') {B B' : Setoid} (B* : Iso B B') →
   Iso (ISO A B) (ISO A' B')
-{-
 Iso* {A} {A'} A* {B} {B'} B* = record {
   R = record {
     Fib =  λ { (e , e') → ∀ {x} {x'} (_ : x ~< A* > x') {y} {y'} (_ : y ~< B* > y')
@@ -137,7 +103,6 @@ Iso* {A} {A'} A* {B} {B'} B* = record {
                           R+ = {!!};
                           R- = {!!} }) , {!!}; p = {!!} };-} 
   R- = {!!} }
--}
 
 sim* : ∀ {A A'} (A* : Iso A A') {B B'} (B* : Iso B B')
          (e : Iso A B) (e' : Iso A' B') (e* : e ~< Iso* A* B* > e')
@@ -145,10 +110,11 @@ sim* : ∀ {A A'} (A* : Iso A A') {B B'} (B* : Iso B B')
          → (x ~< e > y) ⇔ (x' ~< e' > y')
 sim* A* B* e e' e* x* y* = e* x* y*
 
+{-
 record FunS (S S' : Setoid) : Set where
   field
     app : El S → El S'
-    app1 : ∀ (x y : El S) → Setoid.E S x y → Setoid.E S' (app x) (app y)
+    app1 : ∀ (x y : El S) → E S x y → E S' (app x) (app y)
 infixl 10 _·_
 _·_ : ∀ { S T : Setoid } → FunS S T → El S → El T
 f · a = FunS.app f a
@@ -159,7 +125,7 @@ f • p = FunS.app1 f _ _ p
 FUNS : ∀ (S S' : Setoid) → Setoid
 FUNS S S' = record {
   El = FunS S S';
-  E = λ f g → ∀ x x' → Setoid.E S x x' → Setoid.E S' (FunS.app f x) (FunS.app g x');
+  E = λ f g → ∀ x x' → E S x x' → E S' (FunS.app f x) (FunS.app g x');
   r = FunS.app1 ;
   E* = λ {f} {f'} f* {g} {g'} g* →
     (λ  f=g  → λ x x' x* → proj₁
@@ -199,3 +165,4 @@ Pi-SS B F = record {
     (λ f=g {x} {y} p → proj₁ (sim* (id-iso B) (id-iso B) {!!} {!!} {!!} {!!} {!!}) {!!}) , {!!}
   } }
 
+-}
