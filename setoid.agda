@@ -1,4 +1,6 @@
 {-# OPTIONS --type-in-type #-}
+-- todo: change all \sim to ~
+-- todo: app1 >> app* 
 
 module setoid where
 
@@ -113,25 +115,44 @@ ISO S S' = record {
   (λ f-is-h → λ x y → proj₁ (⇔* (f-is-g x y) (h-is-k x y)) (f-is-h x y) ),
   (λ g-is-k → λ x y → proj₂ (⇔* (f-is-g x y) (h-is-k x y)) (g-is-k x y) )}
 
+infix 20 _~<_>_
 _~<_>_ : ∀ {S S'} → El S → (i : Iso S S') → El S' → Set
 a ~< i > b =  Fibra-SP.Fib (Iso.R i) (a , b)
 
-id_iso : ∀ (S : Setoid) → Iso S S
-id_iso = λ S → record { R = diagS S; R+ = ax4S S; R- = ax4S' S }
+id-iso : ∀ (S : Setoid) → Iso S S
+id-iso = λ S → record { R = diagS S; R+ = ax4S S; R- = ax4S' S }
+
+Iso* : ∀ {A A' : Setoid} (A* : Iso A A') {B B' : Setoid} (B* : Iso B B') →
+  Iso (ISO A B) (ISO A' B')
+Iso* {A} {A'} A* {B} {B'} B* = record {
+  R = record {
+    Fib =  λ { (e , e') → ∀ {x} {x'} (_ : x ~< A* > x') {y} {y'} (_ : y ~< B* > y')
+                            → (x ~< e > y) ⇔ (x' ~< e' > y')} ;
+    Sub = λ { (i , i') (j , j') (i=j , i=j') →
+      (λ i* → λ {x} {x'} x* {y} {y'} y* → proj₁ (⇔* (i=j x y) (i=j' x' y')) (i* x* y*)) ,
+      (λ j* → λ {x} {x'} x* {y} {y'} y* → proj₂ (⇔* (i=j x y) (i=j' x' y')) (j* x* y*)) } };
+  R+ = {!!}; {- λ e → record { c = (record {
+                          R = {!λ x' y' → Σ !};
+                          R+ = {!!};
+                          R- = {!!} }) , {!!}; p = {!!} };-} 
+  R- = {!!} }
+
+sim* : ∀ {A A'} (A* : Iso A A') {B B'} (B* : Iso B B')
+         (e : Iso A B) (e' : Iso A' B') (e* : e ~< Iso* A* B* > e')
+         {x x'} (x* : x ~< A* > x') {y y'} (y* : y ~< B* > y')
+         → (x ~< e > y) ⇔ (x' ~< e' > y')
+sim* A* B* e e' e* x* y* = e* x* y*
 
 record FunS (S S' : Setoid) : Set where
   field
     app : El S → El S'
     app1 : ∀ (x y : El S) → Setoid.E S x y → Setoid.E S' (app x) (app y)
-
 infixl 10 _·_
 _·_ : ∀ { S T : Setoid } → FunS S T → El S → El T
 f · a = FunS.app f a
 infixl 10 _•_
 _•_ : ∀ { S T : Setoid } → (f : FunS S T) → {s s' : El S} → (E S s s') → (E T (f · s) (f · s'))
 f • p = FunS.app1 f _ _ p
-
-
 
 FUNS : ∀ (S S' : Setoid) → Setoid
 FUNS S S' = record {
@@ -146,4 +167,33 @@ FUNS S S' = record {
       (E* S' (f* x₁ x'' x*₁) (g* x'' x'' (r S x''))) 
       (f'=g' x'' x'' (r S x''))) }
 
+record Fibra-SS (B : Setoid) : Set where
+  field
+    FibSS : ∀ (x : El B) → Setoid
+    SubSS : ∀ {x y : El B} → E B x y → Iso (FibSS x) (FibSS y)
+    SubSSr : ∀ {x : El B} → E (ISO (FibSS x) (FibSS x)) (SubSS (r B x)) (id-iso (FibSS x))
+    SubSS* : ∀ {x y : El B} → (p q : E B x y) → E (ISO (FibSS x) (FibSS y)) (SubSS p) (SubSS q)
+
+open Fibra-SS
+
+_∋_~[_]_ : ∀ {B : Setoid} (F : Fibra-SS B) {x y : El B} (_ : El (FibSS F x)) → (p : E B x y) → El (FibSS F y) → Set
+_∋_~[_]_ {B} F a p b = a ~< SubSS F p > b
+
+simFib* : ∀ {B : Setoid} (F : Fibra-SS B) {x x'} (x* : E B x x') {y y'} (y* : E B y y')
+         (e : E B x y) (e' : E B x' y') 
+         {s s'} (s* : F ∋ s ~[ x* ] s') {t t'} (t* : F ∋ t ~[ y* ] t')
+         → (F ∋ s ~[ e ] t) ⇔ (F ∋ s' ~[ e' ] t')
+simFib* F x* y* e e' s* t* = sim* (SubSS F x*) (SubSS F y*) (SubSS F e) (SubSS F e') 
+  (λ {a} {a'} a* {b} {b'} b* → {!!}) 
+  s* t*
+
+Pi-SS : ∀ (B : Setoid) (F : Fibra-SS B) → Setoid
+
+Pi-SS B F = record {
+  El = Σ[ f ∈ (∀ (x : El B) → El (FibSS F x)) ] (∀ (x y : El B) → (p : E B x y) → F ∋ f x ~[ p ] f y );
+  E = λ { (f , φ) (f' , φ') → {x y : El B} (p : E B x y) → F ∋ f x ~[ p ] f' y};
+  r = λ {(f , φ) → φ _ _};
+  E* = λ { {(f , φ)} {(f' , φ')} f* {(g , ψ)} {(g' , ψ')} g* →
+    (λ f=g {x} {y} p → proj₁ (sim* (id-iso B) (id-iso B) {!!} {!!} {!!} {!!} {!!}) {!!}) , {!!}
+  } }
 
