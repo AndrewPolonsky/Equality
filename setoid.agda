@@ -122,8 +122,9 @@ a ~< i > b =  Fibra-SP.Fib (Iso.R i) (a , b)
 id-iso : ∀ (S : Setoid) → Iso S S
 id-iso = λ S → record { R = diagS S; R+ = ax4S S; R- = ax4S' S }
 
-Iso* : ∀ {A A' : Setoid} (A* : Iso A A') {B B' : Setoid} (B* : Iso B B') →
+postulate Iso* : ∀ {A A' : Setoid} (A* : Iso A A') {B B' : Setoid} (B* : Iso B B') →
   Iso (ISO A B) (ISO A' B')
+{-
 Iso* {A} {A'} A* {B} {B'} B* = record {
   R = record {
     Fib =  λ { (e , e') → ∀ {x} {x'} (_ : x ~< A* > x') {y} {y'} (_ : y ~< B* > y')
@@ -136,6 +137,7 @@ Iso* {A} {A'} A* {B} {B'} B* = record {
                           R+ = {!!};
                           R- = {!!} }) , {!!}; p = {!!} };-} 
   R- = {!!} }
+-}
 
 sim* : ∀ {A A'} (A* : Iso A A') {B B'} (B* : Iso B B')
          (e : Iso A B) (e' : Iso A' B') (e* : e ~< Iso* A* B* > e')
