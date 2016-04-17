@@ -4,23 +4,26 @@ open import Function using (_∘_)
 open import Data.Unit
 open import Data.Product
 open import Data.Nat
---open import Universes.EqRel
-open import Universes.EqSim
+open import EqSim
 
 infixl 70 _,,_
 data Context : Set
 ⟦_⟧C : Context → Set
 
+-- The collection of contexts Γ
 data Context where
   〈〉 : Context
   _,,_ : ∀ Γ → (⟦ Γ ⟧C → U) → Context
 
-⟦ 〈〉 ⟧C = Unit
-⟦ Γ ,, A ⟧C = Σ[ γ ∈ ⟦ Γ ⟧C ] T (A γ)
-
+-- The collection of Γ-types
 Type : Context → Set
 Type Γ = ⟦ Γ ⟧C → U
 
+-- The collection of Γ-instances
+⟦ 〈〉 ⟧C = Unit
+⟦ Γ ,, A ⟧C = Σ[ γ ∈ ⟦ Γ ⟧C ] T (A γ)
+
+-- The elements of a Γ-type on the meta-level
 ⟦_⟧T : ∀ {Γ} → Type Γ → Set
 ⟦ A ⟧T = ∀ γ → T (A γ)
 
@@ -51,7 +54,7 @@ tjt {suc n} Γ P = tjt {n} (Γ ,, (λ γ → proj₁ (P γ))) (λ γ → proj₂
 
 syntax tjt Γ (λ γ → A) = γ ∶ Γ ⊢ A
 
-data tj Γ where
+data tj Γ where -- "Typing judgement"
   star  : 
 
     -------------
