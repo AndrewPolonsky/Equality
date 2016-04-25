@@ -1,0 +1,234 @@
+\usepackage{amsmath}
+\usepackage{stmaryrd}
+\usepackage{MnSymbol}
+\usepackage{bussproofs}
+\EnableBpAbbreviations
+
+%% syntax
+\DeclareFontFamily{OT1}{pzc}{}
+\DeclareFontShape{OT1}{pzc}{m}{it}{<-> s * [1.10] pzcmi7t}{}
+\DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{it}
+
+\newcommand{\idmap}[1]{\mathpzc{I}_{#1}}
+\newcommand{\types}{\mathbb{T}}
+\newcommand{\tvars}{\mathbb{V}}
+\newcommand{\terms}{\Lambda}
+\newcommand{\trms}[1]{\mathpzc{Terms}({#1})}
+\newcommand{\termsof}[1]{\mathpzc{Terms}({#1})}
+
+%\newcommand{\lsex}{{\lambda{}e}}
+\newcommand{\leeq}{\lambda {\eeq}}
+\newcommand{\leeqr}{\lambda {\eeq} \mathsf{r}}
+\newcommand{\lext}{\lambda\mathpzc{e}}
+
+\newcommand{\vars}{\mathsf{Var}}
+\newcommand{\then}{\;\Longrightarrow\;}
+\newcommand{\comment}[1]{}
+%\newcommand{\hili}[1]{\textcolor{Tan}{#1}}
+\newcommand{\RA}{\Rightarrow}
+\newcommand{\LRA}{\Leftrightarrow}
+\newcommand{\lra}{\leftrightarrow}
+\newcommand{\lRa}{\longrightarrow}
+\newcommand{\lmt}{\longmapsto}
+\newcommand{\ora}{\overrightarrow}
+\newcommand{\stt}{\lambda_{\to\times}}
+\newcommand{\bool}{\mathbb{B}}
+\newcommand{\nat}{\mathbb{N}}
+
+%\definecolor{darkgreen}{rgb}{0,0.4,0.2}
+
+\newcommand{\hired}[1]{\textcolor{red}{#1}}
+\newcommand{\hiblue}[1]{\textcolor{blue}{#1}}
+\newcommand{\higreen}[1]{\textcolor{darkgreen}{#1}}
+\newcommand{\greyout}[1]{\textcolor{gray}{#1}}
+\newcommand{\whiteout}[1]{\textcolor{white}{#1}}
+
+\newcommand{\sta}{*}
+\newcommand{\lstar}{{\lambda\!\!\:\sta}}
+\newcommand{\lstars}{\lstar}
+\newcommand{\lstarss}{{\lambda\!\sta}}
+
+\newcommand{\qomikron}{\ocirc}
+\newcommand{\qfun}{\mathbin{{\ooalign{$\medcircle$\cr\raise.29ex
+\hbox{$\mkern1.9mu\scriptscriptstyle{\to}$}\cr}}}}
+\newcommand{\qprod}{\otimes}
+\newcommand{\absof}[1]{{|{#1}|}}
+\newcommand{\qlam}{\mathsf{Lam}}
+\newcommand{\qapp}{\mathsf{App}}
+\newcommand{\qpair}{\mathsf{Pair}}
+\newcommand{\qproj}{\mathsf{Proj}}
+\newcommand{\sttcontext}{\Gamma(\lambda_{\to\times})}
+\newcommand{\mora}{|M|\ora{[\hat{x}^*/ x]}}
+\newcommand{\tprime}{t'\ora{[\hat x^*/x]}}
+\newcommand{\qbeta}{\beta\!\!\!\beta}
+\newcommand{\ee}[1]{\simeq_{#1}}
+\newcommand{\eqv}{\ee{}}
+\newcommand{\env}{\mathsf{Env}}
+\newcommand{\btype}{\mathsf{Type}}
+\newcommand{\lsimple}{\lambda_{\to}}
+\newcommand{\setof}[1]{\{{#1}\}}
+\newcommand{\seqof}[1]{\langle{#1}\rangle}
+\newcommand{\semof}[1]{\llbracket{#1}\rrbracket}
+\newcommand{\sse}{\subseteq}
+
+\newcommand{\lift}{\mathsf{Lift}}
+\newcommand{\cons}{\mathsf{Cons}}
+\newcommand{\refl}[1]{{\mathsf{r}({#1})}}
+
+\newcommand{\fv}{\mathsf{FV}}
+\newcommand{\fvof}[1]{\fv({#1})}
+\newcommand{\dom}{\mathsf{dom}}
+\newcommand{\ol}[1]{\overline{#1}}
+
+\newcommand{\qFun}{\mathbin{{\ooalign{$\bigcircle$\cr\raise.037ex
+\hbox{$\mkern3.1mu\scriptstyle{\Pi}$}\cr}}}}
+\newcommand{\qSum}{\mathbin{{\ooalign{$\bigcircle$\cr\raise.036ex
+\hbox{$\mkern3.5mu\scriptstyle{\Sigma}$}\cr}}}}
+\newcommand{\ext}{\mathsf{sub}}
+\newcommand{\qsta}{\mathord{\oast}}
+\newcommand{\qU}{\mathbin{{\ooalign{$\bigcircle$\cr\raise.037ex
+\hbox{$\mkern5mu\scriptstyle{\mathtt{U}}$}\cr}}}}
+\newcommand{\qT}{\mathbin{{\ooalign{$\bigcircle$\cr\raise.037ex
+\hbox{$\mkern5mu\scriptstyle{\mathtt{T}}$}\cr}}}}
+\newcommand{\qEq}{\mathbin{{\ooalign{$\bigcircle$\cr\raise.15ex
+\hbox{$\mkern5mu\scriptstyle{\ee{}}$}\cr}}}}
+\newcommand{\qRel}{\mathbin{{\ooalign{$\bigcircle$\cr\raise.2ex
+\hbox{$\mkern5mu\scriptstyle{\sim}$}\cr}}}}
+\newcommand{\lstau}{{\lstar U}}
+\newcommand{\uelim}{\mathsf{U{-}elim}}
+\newcommand{\tspace}{\hskip 3cm\ \ \phantom{U}\ \ }
+
+
+\newcommand{\eqsta}{\refl{\qsta}}
+\newcommand{\eqfun}{{\qFun}\!{}^*}
+\newcommand{\eqsum}{{\qSum}\!{}^*}
+%\newcommand{\eqfun}{\hat \qFun}
+%\newcommand{\eqsum}{\hat \qSum}
+\newcommand{\eqtype}{\mathpzc{Eq}} 
+\newcommand{\reltype}{\mathpzc{Rel}} 
+\newcommand{\idtype}{\mathpzc{Id}} 
+\newcommand{\lstaue}{\lstau\!{\ee{}}}
+\newcommand{\eps}{\epsilon}
+\newcommand{\eqEq}{{{\qEq}\!{}^*}}
+\newcommand{\eqRel}{{{\qRel}\!{}^*}}
+
+
+\newcommand{\thra}{\twoheadrightarrow}
+
+
+\newcommand{\eq}{\quad=\quad}
+\newcommand{\of}{\quad : \quad}
+\newcommand{\de}{\quad := \quad}
+
+
+\comment{
+\newcommand{\pzA}{\mathpzc{A}}
+\newcommand{\pzB}{\mathpzc{B}}
+\newcommand{\pzC}{\mathpzc{C}}
+\newcommand{\pzE}{\mathpzc{E}}
+}
+
+\newcommand{\pzA}{A_*}
+\newcommand{\pzB}{B_*}
+ 
+\newcommand{\phan}{\phantom{\eq}\;}
+\newcommand{\phanq}{\phantom{\eq\qquad}}
+
+\newcommand{\hista}{\!\raisebox{1mm}{${}^*$}}
+\newcommand{\bsim}{\raisebox{-1mm}{\scalebox{1.5}{$\sim$}}}
+%\newcommand{\bsim}{\raisebox{-1mm}{\scalebox{2.5}{$\sim$}}}
+\newcommand{\blam}{\raisebox{-2mm}{\scalebox{2.1}{$\lambda$}}}
+\newcommand{\bseq}{\raisebox{-1mm}{\scalebox{1.8}{${\eeq^*}$}}}
+\newcommand{\ic}{\mathtt{I}}
+\newcommand{\kc}{\mathtt{K}}
+\newcommand{\yc}{\mathtt{Y}}
+\newcommand{\indc}{\mathsf{Ind}}
+\newcommand{\cnc}{\mathsf{c}}
+
+\newcommand{\annoy}{{\sc \ul{Question:}}}
+%\renewcommand{\annoy}{}
+\newcommand{\annoyok}{{\sc \ul{Question:}\ }}
+\newcommand{\istype}{\mathtt{\ type}}
+
+%\newcommand{\and}{{$\ \\& \ $}}
+\newcommand{\scomb}{\mathtt{S}}
+\newcommand{\inl}{\mathsf{in}_1}
+\newcommand{\inr}{\mathsf{in}_2}
+\newcommand{\case}{\mathsf{case}}
+
+\newcommand{\emptytype}{\mathbf{0}}
+\newcommand{\unittype}{\mathbf{1}}
+\newcommand{\ttt}{\mathtt{t}\!\!\mathtt{t}}
+\newcommand{\exfalso}{\mathtt{ef}}
+\newcommand{\point}{\mathtt{pt}}
+\newcommand{\limp}{\supset}
+
+\newcommand{\pdot}{\phantom{.}}
+
+\newcommand{\rrule}{\hspace{1em}\lRa\hspace{1em}}
+\newcommand{\eeq}{\simeq}
+\newcommand{\seq}{{\eeq}^*}
+\newcommand{\srel}{{\sim}^*}
+
+\newcommand{\ssim}{{\sim}}
+\newcommand{\too}{\quad\longrightarrow\quad}
+
+\newcommand{\optarg}[1]{{\textcolor{Periwinkle}{\setof{#1}}}}
+
+\renewcommand{\refl}[1]{\mathsf{r}({#1})}
+\newcommand{\sym}[1]{\ol {#1}}
+\newcommand{\tr}[2]{{#1} \circ {#2}}
+\newcommand{\Sub}[3]{\mathpzc{Sub}_{#1}({#2},{#3})}
+\newcommand{\sub}[4]{\mathpzc{sub}_{#1}\optarg{#2}({#3},{#4})}
+
+\newcommand{\trip}[3]{
+{\scriptsize \left[
+  \begin{array}{l}
+    {#1}\\
+    {#2}\\
+    {#3}
+  \end{array}
+\right]}}
+
+\newcommand{\tripar}[3]{
+{\scriptsize \left(
+  \begin{array}{l}
+    {#1}\\
+    {#2}\\
+    {#3}
+  \end{array}
+\right)}}
+
+\newcommand{\trisub}[6]{
+{\scriptsize \left(
+  \begin{array}{r p{-2mm} l}
+    {#1}&/&{#2}\\
+    {#3}&/&{#4}\\
+    {#5}&/&{#6}
+  \end{array}
+\right)}}
+
+\newcommand{\err}{}
+\newcommand{\ups}{\upsilon}
+\newcommand{\envt}{\Gamma_0}
+\newcommand{\rsa}{\rightsquigarrow}
+
+
+\newcommand{\turn}[1]{{#1}{\rotatebox[origin=c]{180}{$\looparrowleft$}\!}}
+\newcommand{\flip}[1]{\mathbin{\rotatebox[origin=c]{-90}{$\looparrowright$}\!{}_{#1}}}
+\newcommand{\lflip}[1]{\mathbin{\rotatebox[origin=c]{-90}{$\looparrowleft$}\!{}_{#1}}}
+\newcommand{\sflip}[1]{\mathbin{\scalebox{0.7}{\rotatebox[origin=c]{-90}{$\looparrowright$}}\!{}_{#1}\!}}
+
+
+\newcommand{\rec}{\mathpzc{Rec}}
+\newcommand{\llra}{\longleftrightarrow}
+\newcommand{\df}{\quad:=\quad}
+
+\newcommand{\bset}{\mathsf{Set}}
+
+\newcommand{\lstarn}{\lstar\!{}_n}
+\newcommand{\lrra}{\longrightarrow}
+\newcommand{\llla}{\longleftarrow}
+\newcommand{\lth}{\mathcal H}
+
+\newcommand{\ul}[1]{\underline{#1}}
