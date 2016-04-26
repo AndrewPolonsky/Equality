@@ -1,6 +1,6 @@
-module prop where
+module Prop where
 
-open import Data.Product public
+open import Data.Product
 
 infix 5 _⇔_
 _⇔_ : Set → Set → Set
@@ -25,14 +25,5 @@ imp* (PQ , QP) (RS , SR) = (λ PR q → RS (PR (QP q))) , (λ QS p → SR (QS (P
 
 flip : ∀ {A B : Set} {P Q R S : A → B → Set} → (∀ x y → (P x y ⇔ Q x y)) → (∀ x y → (R x y ⇔ S x y)) → ((∀ x y → (P x y ⇔ R x y)) ⇔ (∀ x y → (Q x y ⇔ S x y)))
 flip {A} {B} {P} {Q} {R} {S} P⇔Q R⇔S = 
-  (λ P⇔R a b → (λ z → proj₁ (R⇔S a b) (proj₁ (P⇔R a b) (proj₂ (P⇔Q a b) z))) , 
-    (λ z → proj₁ (P⇔Q a b) (proj₂ (P⇔R a b) (proj₂ (R⇔S a b) z)))) , 
-  (λ Q⇔S a b → (λ z → proj₂ (R⇔S a b) (proj₁ (Q⇔S a b) (proj₁ (P⇔Q a b) z))) , 
-    (λ z → proj₂ (P⇔Q a b) (proj₂ (Q⇔S a b) (proj₁ (R⇔S a b) z))))
-
-PRODP : Set → Set → Set
-PRODP p q = p × q
-
-PRODP* : ∀ {p p'} (p* : p ⇔ p') {q q'} (q* : q ⇔ q') → PRODP p q ⇔ PRODP p' q'
-PRODP* (pp' , p'p) (qq' , q'q) = (λ {(x , y) → pp' x , qq' y}) , (λ {(x , y) → p'p x , q'q y})
-
+  ∀* (λ x → ∀* (λ y → ⇔* (P⇔Q x y) (R⇔S x y)))
+--TODO Inline this?

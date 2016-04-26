@@ -1,84 +1,16 @@
-{-# OPTIONS --type-in-type #-}
+module Setoid.Isomorphism where
 
-module setoid where
-
-open import prop
-
-record Setoid : Set where
-  field
-    El : Set
-    E : El → El → Set
-    r : ∀ (x : El) → E x x
-    E* : ∀ {x x' : El} → E x x' → ∀ {y y' : El} → E y y' → (E x y ⇔ E x' y')
-  sym : ∀ {x y : El} → E x y → E y x
-  sym {x} {y} p = proj₁ (E* p (r x)) (r x)
-  trans : ∀ {x y z : El} → E x y → E y z → E x z
-  trans {x} {y} {z} p q = proj₂ (E* p (r z)) q
-
-open Setoid public
-
-_⁻¹ : ∀ {S} {x} {y} → E S x y → E S y x
-_⁻¹ {S} {x} {y} = sym S
-
-Prop:Set : Setoid
-Prop:Set = record {
-  El = Set;
-  E = _⇔_;
-  r = λ S → refl_p;
-  E* = ⇔* }
-    
-record ContrS (S : Setoid) : Set where
-  field
-    c : El S
-    p : ∀ (x : El S) → E S x c
-
-record FibSP (B : Setoid) : Set where
-  field
-    Fib : ∀ (x : El B) → Set
-    Sub : ∀ (x y : El B) → E B x y → (Fib x ⇔ Fib y)
-open FibSP
-    
-Sigma-SP : ∀ (S : Setoid) → (FibSP S) → Setoid
-Sigma-SP S P = record {
-  El = Σ[ s ∈ El S ] (FibSP.Fib P s);
-  E = λ x y → E S (proj₁ x) (proj₁ y);
-  r = λ x → r S (proj₁ x);
-  E* = λ x* y* → E* S x* y*}
-
-proj₁* : ∀ {S P x x'} → E (Sigma-SP S P) x x' → E S (proj₁ x) (proj₁ x')
-proj₁* x* = x*
-
-PRODS : ∀ (S S' : Setoid) → Setoid
-PRODS S S' = record {
-  El = El S × El S';
-  E = λ x y → PRODP (E S (proj₁ x) (proj₁ y)) (E S' (proj₂ x) (proj₂ y)) ;
-  r = λ { (x , x') → r S x , r S' x'};
-  E* = λ { (x1* , x2*) (y1* , y2*) → PRODP* (E* S x1* y1*) (E* S' x2* y2*) }}
-
-diagS : ∀ (S : Setoid) → FibSP (PRODS S S) 
-diagS = λ S → record {
-  Fib = λ x → E S (proj₁ x) (proj₂ x);
-  Sub = λ x y x₁ → E* S (proj₁ x₁) (proj₂ x₁) }
-
-FibSP-p1 : ∀ {S T : Setoid} → FibSP (PRODS S T) → El T → FibSP S
-FibSP-p1 {S} {T} F t = 
-  record { Fib = λ s → Fib F (s , t); Sub = λ x y p → Sub F (x , t) (y , t) (p , (r T t)) }
-
-FibSP-p2 : ∀ {S T : Setoid} → FibSP (PRODS S T) → El S → FibSP T
-FibSP-p2 {S} {T} F s = 
-  record { Fib = λ t → Fib F (s , t); Sub = λ x y p → Sub F (s , x) (s , y) (r S s , p) }
-
-ax4S : ∀ (S : Setoid) → (x : El S) → ContrS (Sigma-SP S (FibSP-p2 {S} {S} (diagS S) x) )
-ax4S S x = record { c = x , r S x; p = λ x → sym S (proj₂ x) }
-
-ax4S' : ∀ (S : Setoid) → (x : El S) → ContrS (Sigma-SP S (FibSP-p1 {S} {S} (diagS S) x) )
-ax4S' S x = record { c = x , r S x; p = proj₂ }
+open import Prop
+open import Setoid
+open import Setoid.Product
+open import Setoid.Function
+open import Setoid.Fibra-SP
 
 record Iso (S S' : Setoid) : Set where
   field
     R : FibSP (PRODS S S')
-    R+ : ∀ (x : El S)  → ContrS (Sigma-SP S' ((FibSP-p2 {S} {S'} R x)))
-    R- : ∀ (y : El S') → ContrS (Sigma-SP S  (FibSP-p1 {S} {S'} R y))
+    R+ : ∀ (x : El S)  → ContrS (Sigma-SP S' (FibSP-p2 R x))
+    R- : ∀ (y : El S') → ContrS (Sigma-SP S  (FibSP-p1 R y))
 
 infix 20 _~<_>_
 _~<_>_ : ∀ {S S'} → El S → (i : Iso S S') → El S' → Set
@@ -117,7 +49,7 @@ transport⁻¹-transport e x = transport⁻¹-unique e x (transport e x) (iso-tr
 transport-transport⁻¹ : ∀ {S S'} (e : Iso S S') (y : El S') → E S' y (transport e (transport⁻¹ e y))
 transport-transport⁻¹ e y = transport-unique e (transport⁻¹ e y) y (transport⁻¹-iso e y)
 
-ISO : ∀ (S S' : Setoid) → Setoid
+ISO : Setoid → Setoid → Setoid
 ISO S S' = record {
   El = Iso S S';
   E = λ i j → ∀ x y → (Fib (Iso.R i) (x , y)) ⇔ (Fib (Iso.R j) (x , y));
@@ -151,33 +83,11 @@ SQUARE-COMMUTES {A} {A'} {B} {B'} A* B* = record {
   Fib = λ {(e , e') → square-commutes A* B* e e'} ; 
   Sub = λ {(i , i') (j , j') (i=j , i'=j') → square-commutes* {A} {A'} {B} {B'} {A*} {A*} {B*} {B*} {i} {j} {i'} {j'} (r (ISO A A') A*) (r (ISO B B') B*) i=j i'=j'} }
 
-record FunS (S S' : Setoid) : Set where
-  field
-    app : El S → El S'
-    app1 : ∀ (x y : El S) → E S x y → E S' (app x) (app y)
-infixl 10 _·_
-_·_ : ∀ { S T : Setoid } → FunS S T → El S → El T
-f · a = FunS.app f a
-infixl 10 _•_
-_•_ : ∀ { S T : Setoid } → (f : FunS S T) → {s s' : El S} → (E S s s') → (E T (f · s) (f · s'))
-f • p = FunS.app1 f _ _ p
-
 TRANSPORT : ∀ {S S'} → Iso S S' → FunS S S'
 TRANSPORT e = record { app = transport e ; app1 = λ _ _ → transport* e }
 
 TRANSPORT⁻¹ : ∀ {S S'} → Iso S S' → FunS S' S
 TRANSPORT⁻¹ e = record { app = transport⁻¹ e ; app1 = λ _ _ → transport⁻¹* e }
-
-ProdF : ∀ {A A' B B'} → FunS A A' → FunS B B' → FunS (PRODS A B) (PRODS A' B')
-ProdF f g = record { 
-  app = λ {(a , b) → f · a , g · b} ; 
-  app1 = λ {(a , b) (a' , b') (a* , b*) → f • a* , g • b* }}
-
---The pullback of a fibration along a function is a fibration
-pullback : ∀ {S} {S'} → FunS S S' → FibSP S' → FibSP S
-pullback f F = record { 
-  Fib = λ x → Fib F (f · x) ; 
-  Sub = λ x x' x* → Sub F (f · x) (f · x') (f • x*) }
 
 --TODO: Refactor as follows
 --1. Define isomorphism of fibrations
@@ -229,47 +139,5 @@ sim* : ∀ {A A'} (A* : Iso A A') {B B'} (B* : Iso B B')
          (e : Iso A B) (e' : Iso A' B') (e* : e ~< Iso* A* B* > e')
          {x x'} (x* : x ~< A* > x') {y y'} (y* : y ~< B* > y')
          → (x ~< e > y) ⇔ (x' ~< e' > y')
-sim* A* B* e e' e* x* y* = e* x* y*
-
-FUNS : ∀ (S S' : Setoid) → Setoid
-FUNS S S' = record {
-  El = FunS S S';
-  E = λ f g → ∀ x x' → E S x x' → E S' (FunS.app f x) (FunS.app g x');
-  r = FunS.app1 ;
-  E* = λ {f} {f'} f* {g} {g'} g* →
-    (λ  f=g  → λ x x' x* → proj₁
-      (E* S' (f* x' x (sym S x*)) (g* x' x' (r S x')))
-      (f=g x' x' (r S x'))) ,
-    (λ f'=g' → λ x₁ x'' x*₁ → proj₂
-      (E* S' (f* x₁ x'' x*₁) (g* x'' x'' (r S x''))) 
-      (f'=g' x'' x'' (r S x''))) }
-
-record Fibra-SS (B : Setoid) : Set where
-  field
-    FibSS : ∀ (x : El B) → Setoid
-    SubSS : ∀ {x y : El B} → E B x y → Iso (FibSS x) (FibSS y)
-    SubSSr : ∀ {x : El B} → E (ISO (FibSS x) (FibSS x)) (SubSS (r B x)) (id-iso (FibSS x))
-    SubSS* : ∀ {a a' b b' : El B} (a* : E B a a') (b* : E B b b') (e : E B a b) (e' : E B a' b') → 
-      square-commutes (SubSS a*) (SubSS b*) (SubSS e) (SubSS e') 
---Changelog: Changed SubSS*
-
-open Fibra-SS
-
-_∋_~[_]_ : ∀ {B : Setoid} (F : Fibra-SS B) {x y : El B} (_ : El (FibSS F x)) → (p : E B x y) → El (FibSS F y) → Set
-_∋_~[_]_ {B} F a p b = a ~< SubSS F p > b
-
-simFib* : ∀ {B : Setoid} (F : Fibra-SS B) {x x'} (x* : E B x x') {y y'} (y* : E B y y')
-         (e : E B x y) (e' : E B x' y') 
-         {s s'} (s* : F ∋ s ~[ x* ] s') {t t'} (t* : F ∋ t ~[ y* ] t')
-         → (F ∋ s ~[ e ] t) ⇔ (F ∋ s' ~[ e' ] t')
-simFib* F x* y* e e' = sim* (SubSS F x*) (SubSS F y*) (SubSS F e) (SubSS F e') (SubSS* F x* y* e e')
-
-Pi-SS : ∀ (B : Setoid) (F : Fibra-SS B) → Setoid
-
-Pi-SS B F = record {
-  El = Σ[ f ∈ (∀ (x : El B) → El (FibSS F x)) ] (∀ (x y : El B) → (p : E B x y) → F ∋ f x ~[ p ] f y );
-  E = λ { (f , φ) (f' , φ') → {x y : El B} (p : E B x y) → F ∋ f x ~[ p ] f' y};
-  r = λ {(f , φ) → φ _ _};
-  E* = λ { {(f , φ)} {(f' , φ')} f* {(g , ψ)} {(g' , ψ')} g* →
-    ∀** (λ x → ∀** (λ y → ∀* (λ p → simFib* F (r B x) (r B y) p p (f* (r B x)) (g* (r B y)))))
-  } }
+sim* _ _ _ _ e* = e*
+--TODO Inline this?
