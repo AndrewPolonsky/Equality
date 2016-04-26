@@ -132,8 +132,13 @@ inv-iso e = record {
   R = record { 
     Fib = λ {(x , y) → y ~< e > x} ;
     Sub = λ {x x' (x* , y*) → y* ~*< e > x*} } ; 
-  R+ = {!!} ; 
-  R- = {!!} }
+  R+ = λ x' → record { 
+    c = (transport⁻¹ e x') , 
+        (transport⁻¹-iso e x') ; 
+    p = λ {(_ , p) → transport⁻¹-unique e _ x' p} } ; 
+  R- = λ x → record { 
+    c = transport e x , iso-transport e x ; 
+    p = λ {(_ , p) → transport-unique e _ _ p} } }
 
 square-commutes : ∀ {A A' B B'} → Iso A A' → Iso B B' → Iso A B → Iso A' B' → Set
 square-commutes A* B* e e' = ∀ {x} {x'} → x ~< A* > x' → ∀ {y} {y'} → y ~< B* > y' → x ~< e > y ⇔ x' ~< e' > y'
@@ -201,34 +206,24 @@ fill {A} {A'} {B} {B'} A* B* e = record {
         (proj₁ (transport⁻¹-transport A* _ ~*< e > r B _) (transport⁻¹-iso e _)) ; 
     p = λ {(a' , p) → fill-lm' _ e A* _ p}}}
 
+fill-commutes : ∀ {A A' B B'} (A* : Iso A A') (B* : Iso B B') (e : Iso A B) → square-commutes A* B* e (fill A* B* e)
+fill-commutes A* B* e = λ {x} {x'} x~x' {y} {y'} y~y' → transport⁻¹-unique A* x x' x~x' ~*< e > transport⁻¹-unique B* y y' y~y'
+
+fill-commutes' : ∀ {A A' B B'} (A* : Iso A A') (B* : Iso B B') (e : Iso A' B') → square-commutes A* B* (fill (inv-iso A*) (inv-iso B*) e) e
+fill-commutes' {A} {A'} {B} {B'} A* B* e = λ {x} {x'} x~x' {y} {y'} y~y' → sym A' (transport⁻¹-unique (inv-iso A*) x' x x~x') ~*< e > sym B' (transport⁻¹-unique (inv-iso B*) y' y y~y')
+
 Iso* : ∀ {A A' : Setoid} (A* : Iso A A') {B B' : Setoid} (B* : Iso B B') →
   Iso (ISO A B) (ISO A' B')
 Iso* {A} {A'} A* {B} {B'} B* = record { 
   R = SQUARE-COMMUTES A* B*;
   R+ = λ e → record { 
-    c = (fill A* B* e) , 
-        {!!} ; 
-    p = {!!} } ; 
+    c = fill A* B* e , 
+        fill-commutes A* B* e ;
+    p = λ {(e' , p) x' y' → sym Prop:Set (p (transport⁻¹-iso A* x') (transport⁻¹-iso B* y'))} } ; 
   R- = λ e → record { 
     c = (fill (inv-iso A*) (inv-iso B*) e) , 
-        {!!} ; 
-    p = {!!} } }
-{-  R+ = λ e → record { 
-    c = (record { 
-      R = record { 
-        Fib = λ x → transport⁻¹ A* (proj₁ x) ~< e > transport⁻¹ B* (proj₂ x);
-        Sub = λ {(x , y) (x' , y') (x* , y*) → transport⁻¹* A* x* ~*< e > transport⁻¹* B* y* }};
-      R+ = λ a' → record { 
-        c = transport B* (transport e (transport⁻¹ A* a')) ,
-            proj₁ (r A _ ~*< e > transport⁻¹-transport B* _) (iso-transport e _) ; 
-        p = λ {(b' , p) → trans B' (transport-transport⁻¹ B* b') (transport* B* (transport-unique e _ _ p))}};
-      R- = λ b' → record { 
-        c = (transport A* (transport⁻¹ e (transport⁻¹ B* b'))) , 
-            proj₁ (transport⁻¹-transport A* _ ~*< e > r B _) (transport⁻¹-iso e _) ; 
-        p = λ {(a' , p) → trans A' (transport-transport⁻¹ A* a') (transport* A* (transport⁻¹-unique e _ _ p))} } }) , 
-        (λ x* y* → transport⁻¹-unique A* _ _ x* ~*< e > transport⁻¹-unique B* _ _ y*) ; 
-    p = λ {(e' , p) a' b' → sym Prop:Set (p (transport⁻¹-iso A* a') (transport⁻¹-iso B* b'))} };
-  R- = {!!} }
+        fill-commutes' A* B* e ; 
+    p = λ {(e' , p) x' y' → p (iso-transport A* x') (iso-transport B* y')} } }
 
 sim* : ∀ {A A'} (A* : Iso A A') {B B'} (B* : Iso B B')
          (e : Iso A B) (e' : Iso A' B') (e* : e ~< Iso* A* B* > e')
@@ -254,7 +249,9 @@ record Fibra-SS (B : Setoid) : Set where
     FibSS : ∀ (x : El B) → Setoid
     SubSS : ∀ {x y : El B} → E B x y → Iso (FibSS x) (FibSS y)
     SubSSr : ∀ {x : El B} → E (ISO (FibSS x) (FibSS x)) (SubSS (r B x)) (id-iso (FibSS x))
-    SubSS* : ∀ {x y : El B} → (p q : E B x y) → E (ISO (FibSS x) (FibSS y)) (SubSS p) (SubSS q)
+    SubSS* : ∀ {a a' b b' : El B} (a* : E B a a') (b* : E B b b') (e : E B a b) (e' : E B a' b') → 
+      square-commutes (SubSS a*) (SubSS b*) (SubSS e) (SubSS e') 
+--Changelog: Changed SubSS*
 
 open Fibra-SS
 
@@ -265,9 +262,7 @@ simFib* : ∀ {B : Setoid} (F : Fibra-SS B) {x x'} (x* : E B x x') {y y'} (y* : 
          (e : E B x y) (e' : E B x' y') 
          {s s'} (s* : F ∋ s ~[ x* ] s') {t t'} (t* : F ∋ t ~[ y* ] t')
          → (F ∋ s ~[ e ] t) ⇔ (F ∋ s' ~[ e' ] t')
-simFib* F x* y* e e' s* t* = sim* (SubSS F x*) (SubSS F y*) (SubSS F e) (SubSS F e') 
-  (λ {a} {a'} a* {b} {b'} b* → {!!}) 
-  s* t*
+simFib* F x* y* e e' = sim* (SubSS F x*) (SubSS F y*) (SubSS F e) (SubSS F e') (SubSS* F x* y* e e')
 
 Pi-SS : ∀ (B : Setoid) (F : Fibra-SS B) → Setoid
 
@@ -276,7 +271,5 @@ Pi-SS B F = record {
   E = λ { (f , φ) (f' , φ') → {x y : El B} (p : E B x y) → F ∋ f x ~[ p ] f' y};
   r = λ {(f , φ) → φ _ _};
   E* = λ { {(f , φ)} {(f' , φ')} f* {(g , ψ)} {(g' , ψ')} g* →
-    (λ f=g {x} {y} p → proj₁ (sim* (id-iso B) (id-iso B) {!!} {!!} {!!} {!!} {!!}) {!!}) , {!!}
+    ∀** (λ x → ∀** (λ y → ∀* (λ p → simFib* F (r B x) (r B y) p p (f* (r B x)) (g* (r B y)))))
   } }
-
--}
