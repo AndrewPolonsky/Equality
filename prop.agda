@@ -5,8 +5,8 @@ open import Data.Product public
 _⇔_ : Set → Set → Set
 p ⇔ q = (p → q) × (q → p)
 
-refl_p : ∀ {p : Set} → p ⇔ p
-refl_p = (λ x → x) , (λ x → x)
+id-iff : ∀ {p : Set} → p ⇔ p
+id-iff = (λ x → x) , (λ x → x)
 
 ⇔* : ∀ {p1 p2} → (p1 ⇔ p2) → ∀ {q1 q2} → (q1 ⇔ q2) → (p1 ⇔ q1) ⇔ (p2 ⇔ q2)
 ⇔* {p1} {p2} p12 {q1} {q2} q12 = (
@@ -26,3 +26,8 @@ PRODP p q = p × q
 PRODP* : ∀ {p p'} (p* : p ⇔ p') {q q'} (q* : q ⇔ q') → PRODP p q ⇔ PRODP p' q'
 PRODP* (pp' , p'p) (qq' , q'q) = (λ {(x , y) → pp' x , qq' y}) , (λ {(x , y) → p'p x , q'q y})
 
+FUNP : Set → Set → Set
+FUNP p q = p → q
+
+FUNP* : ∀ {p p'} (p* : p ⇔ p') {q q'} (q* : q ⇔ q') → FUNP p q ⇔ FUNP p' q'
+FUNP* (pp' , p'p) (qq' , q'q) = (λ z z₁ → qq' (z (p'p z₁))) , (λ z z₁ → q'q (z (pp' z₁)))

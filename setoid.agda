@@ -22,7 +22,7 @@ Prop:Set : Setoid
 Prop:Set = record {
   El = Set;
   E = _⇔_;
-  r = λ S → refl_p;
+  r = λ S → id-iff;
   E* = ⇔* }
     
 record ContrS (S : Setoid) : Set where
@@ -79,7 +79,7 @@ ISO : ∀ (S S' : Setoid) → Setoid
 ISO S S' = record {
   El = Iso S S';
   E = λ i j → ∀ x y → (Fib (Iso.R i) (x , y)) ⇔ (Fib (Iso.R j) (x , y));
-  r = λ i → λ x y → refl_p;
+  r = λ i → λ x y → id-iff;
   E* = λ f-is-g h-is-k → flip f-is-g h-is-k }
 
 infix 20 _~<_>_
