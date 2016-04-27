@@ -1,3 +1,5 @@
+{-# OPTIONS --type-in-type #-}
+
 module Setoid.Isomorphism where
 
 open import Prop
@@ -5,6 +7,7 @@ open import Setoid
 open import Setoid.Product
 open import Setoid.Function
 open import Setoid.Fibra-SP
+open import Setoid.Sigma-SP
 
 record Iso (S S' : Setoid) : Set where
   field
@@ -16,8 +19,8 @@ infix 20 _~<_>_
 _~<_>_ : ∀ {S S'} → El S → (i : Iso S S') → El S' → Set
 a ~< i > b =  Fib (Iso.R i) (a , b)
 
-_~*<_>_ : ∀ {S S'} {x x' : El S} → E S x x' → (i : Iso S S') → {y y' : El S'} → E S' y y' → (x ~< i > y) ⇔ (x' ~< i > y')
-x* ~*< i > y* = Sub (Iso.R i) _ _ (x* , y*)
+iso-cong : ∀ {S S'} {x x' : El S} (i : Iso S S') {y y' : El S'} → E S x x' → E S' y y' → (x ~< i > y ⇔ x' ~< i > y')
+iso-cong i x* y* = Sub (Iso.R i) _ _ (x* , y*)
 
 transport : ∀ {S S'} → Iso S S' → El S → El S'
 transport {S} {S'} e x = proj₁ (ContrS.c (Iso.R+ e x))
@@ -29,7 +32,7 @@ transport-unique : ∀ {S S'} (e : Iso S S') (x : El S) (y : El S') → x ~< e >
 transport-unique e x y xey = ContrS.p (Iso.R+ e x) (y , xey)
 
 transport* : ∀ {S S'} (e : Iso S S') {x x' : El S} → E S x x' → E S' (transport e x) (transport e x')
-transport* {S} {S'} e {x} {x'} x* = transport-unique e x' (transport e x) (proj₁ (x* ~*< e > r S' (transport e x)) (iso-transport e x))
+transport* {S} {S'} e {x} {x'} x* = transport-unique e x' (transport e x) (proj₁ (iso-cong e x* (r S' (transport e x))) (iso-transport e x))
 
 transport⁻¹ : ∀ {S S'} → Iso S S' → El S' → El S
 transport⁻¹ e x = proj₁ (ContrS.c (Iso.R- e x))
@@ -41,13 +44,13 @@ transport⁻¹-unique : ∀ {S S'} (e : Iso S S') (x : El S) (y : El S') → x ~
 transport⁻¹-unique e x y xey = ContrS.p (Iso.R- e y) (x , xey)
 
 transport⁻¹* : ∀ {S S'} (e : Iso S S') {y y' : El S'} → E S' y y' → E S (transport⁻¹ e y) (transport⁻¹ e y')
-transport⁻¹* {S} {S'} e {y} {y'} y* = transport⁻¹-unique e (transport⁻¹ e y) y' (proj₁ (r S (transport⁻¹ e y) ~*< e > y*) (transport⁻¹-iso e y))
-
-transport⁻¹-transport : ∀ {S S'} (e : Iso S S') (x : El S) → E S x (transport⁻¹ e (transport e x))
-transport⁻¹-transport e x = transport⁻¹-unique e x (transport e x) (iso-transport e x)
+transport⁻¹* {S} {S'} e {y} {y'} y* = transport⁻¹-unique e (transport⁻¹ e y) y' (proj₁ (iso-cong e (r S (transport⁻¹ e y)) y*) (transport⁻¹-iso e y))
 
 transport-transport⁻¹ : ∀ {S S'} (e : Iso S S') (y : El S') → E S' y (transport e (transport⁻¹ e y))
 transport-transport⁻¹ e y = transport-unique e (transport⁻¹ e y) y (transport⁻¹-iso e y)
+
+transport⁻¹-transport : ∀ {S S'} (e : Iso S S') (x : El S) → E S x (transport⁻¹ e (transport e x))
+transport⁻¹-transport e x = transport⁻¹-unique e x (transport e x) (iso-transport e x)
 
 ISO : Setoid → Setoid → Setoid
 ISO S S' = record {
@@ -56,6 +59,9 @@ ISO S S' = record {
   r = λ i → λ x y → refl_p;
   E* = λ f-is-g h-is-k → flip f-is-g h-is-k }
 
+_~*<_>_ : ∀ {S S'} {x x' : El S} {i i' : Iso S S'} {y y' : El S'} → E S x x' → E (ISO S S') i i' → E S' y y' → (x ~< i > y) ⇔ (x' ~< i' > y')
+_~*<_>_ {S} {S'} {x} {x'} {i} {i'} {y} {y'} x* i* y* = trans Prop:Set (i* x y) (Sub (Iso.R i') (x , y) (x' , y') (x* , y*))
+
 id-iso : ∀ (S : Setoid) → Iso S S
 id-iso = λ S → record { R = diagS S; R+ = ax4S S; R- = ax4S' S }
 
@@ -63,7 +69,7 @@ inv-iso : ∀ {S S'} → Iso S S' → Iso S' S
 inv-iso e = record { 
   R = record { 
     Fib = λ {(x , y) → y ~< e > x} ;
-    Sub = λ {x x' (x* , y*) → y* ~*< e > x*} } ; 
+    Sub = λ {x x' (x* , y*) → iso-cong e y* x*} };
   R+ = λ x' → record { 
     c = (transport⁻¹ e x') , 
         (transport⁻¹-iso e x') ; 
@@ -109,18 +115,18 @@ fill {A} {A'} {B} {B'} A* B* e = record {
   R = pullback (ProdF (TRANSPORT⁻¹ A*) (TRANSPORT⁻¹ B*)) (Iso.R e) ;
   R+ = λ a' → record { 
     c = (transport B* (transport e (transport⁻¹ A* a'))) , 
-        (proj₁ (r A _ ~*< e > transport⁻¹-transport B* _) (iso-transport e _)) ; 
+        (proj₁ (iso-cong e (r A _) (transport⁻¹-transport B* _)) (iso-transport e _)) ; 
     p = λ {(b' , p) → fill-lm _ e B* b' p}};
   R- = λ b' → record { 
     c = (transport A* (transport⁻¹ e (transport⁻¹ B* b'))) , 
-        (proj₁ (transport⁻¹-transport A* _ ~*< e > r B _) (transport⁻¹-iso e _)) ; 
+        (proj₁ (iso-cong e (transport⁻¹-transport A* _) (r B _)) (transport⁻¹-iso e _)) ; 
     p = λ {(a' , p) → fill-lm' _ e A* _ p}}}
 
 fill-commutes : ∀ {A A' B B'} (A* : Iso A A') (B* : Iso B B') (e : Iso A B) → square-commutes A* B* e (fill A* B* e)
-fill-commutes A* B* e = λ {x} {x'} x~x' {y} {y'} y~y' → transport⁻¹-unique A* x x' x~x' ~*< e > transport⁻¹-unique B* y y' y~y'
+fill-commutes A* B* e = λ {x} {x'} x~x' {y} {y'} y~y' → iso-cong e (transport⁻¹-unique A* x x' x~x') (transport⁻¹-unique B* y y' y~y')
 
 fill-commutes' : ∀ {A A' B B'} (A* : Iso A A') (B* : Iso B B') (e : Iso A' B') → square-commutes A* B* (fill (inv-iso A*) (inv-iso B*) e) e
-fill-commutes' {A} {A'} {B} {B'} A* B* e = λ {x} {x'} x~x' {y} {y'} y~y' → sym A' (transport⁻¹-unique (inv-iso A*) x' x x~x') ~*< e > sym B' (transport⁻¹-unique (inv-iso B*) y' y y~y')
+fill-commutes' {A} {A'} {B} {B'} A* B* e = λ {x} {x'} x~x' {y} {y'} y~y' → iso-cong e (sym A' (transport⁻¹-unique (inv-iso A*) x' x x~x')) (sym B' (transport⁻¹-unique (inv-iso B*) y' y y~y'))
 
 Iso* : ∀ {A A' : Setoid} (A* : Iso A A') {B B' : Setoid} (B* : Iso B B') →
   Iso (ISO A B) (ISO A' B')

@@ -8,10 +8,10 @@ record FunS (S S' : Setoid) : Set where
   field
     app : El S → El S'
     app1 : ∀ (x y : El S) → E S x y → E S' (app x) (app y)
-infixl 10 _·_
+infixl 50 _·_
 _·_ : ∀ { S T : Setoid } → FunS S T → El S → El T
 f · a = FunS.app f a
-infixl 10 _•_
+infixl 50 _•_
 _•_ : ∀ { S T : Setoid } → (f : FunS S T) → {s s' : El S} → (E S s s') → (E T (f · s) (f · s'))
 f • p = FunS.app1 f _ _ p
 
