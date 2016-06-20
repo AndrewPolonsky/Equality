@@ -1,7 +1,7 @@
 {-# OPTIONS --type-in-type #-}
 module groupoid where
 
-open import Prop
+open import prop
 open import Setoid
 open import Setoid.Function
 open import Setoid.Isomorphism
@@ -17,8 +17,8 @@ record Groupoid : Set where
     Ob : Set
     Eq : Ob → Ob → Setoid
     rr : ∀ (x : Ob) → El (Eq x x)
-    ≃* : ∀ {x x' y y' : Ob} → FunS (Eq x x') (FUNS (Eq y y') (ISO (Eq x y) (Eq x' y')))
-  
+    ≃* : ∀ {x x' y y' : Ob} → FunS (PRODS (Eq x x') (Eq y y')) (ISO (Eq x y) (Eq x' y'))
+
 open Groupoid public
 
 _∋_≃_ : ∀ G → Ob G → Ob G → Set
@@ -128,6 +128,9 @@ UnitS : Setoid
 UnitS = record { El = ⊤; E = λ x x₁ → ⊤ }
 UnitG : Groupoid
 UnitG = record { Ob = ⊤; Eq = λ x x₁ → UnitS }
+
+Diag : ∀ G → Fibra-GS (PRODG G G)
+Diag G = ?
 
 {-
 
