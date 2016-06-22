@@ -4,6 +4,17 @@
 
 \usepackage{MnSymbol}
 
+\newcommand{\leqg}{{\lambda{\simeq}_2}}
+
+\newcommand{\unitt}{{\boldsymbol{1}}}
+%\newcommand{\ttt}{\mathtt{t\!t}}
+\newcommand{\idof}[1]{\mathsf{Id}{(#1)}}
+
+\newcommand{\props}{\mathsf{Prop}}
+\newcommand{\sets}{\mathsf{Set}}
+\newcommand{\grpds}{\mathsf{Grpd}}
+\newcommand{\TLRA}{\Lleftarrow\!\!\!\!\!\Rrightarrow}
+\newcommand{\gequiv}{\TLRA}
 \begin{document}
 \pagestyle{empty}
 \thispagestyle{empty}
@@ -12,10 +23,9 @@
 \begin{align*}
   t, A \quad ::= \quad \unitt &\mid \props \mid \sets \mid \grpds \mid
   \sta_3\\
-&\mid P \lra Q \mid A \LRA B \mid G \gequiv H \mid \grpds \simeq_3 \grpds \\
-&\mid \ttt \mid x \mid (\Pi x {:} A) B \mid (\Sigma x {:} A) B 
-\mid \lambda x {:}A.t \mid s t \mid (s,t) \mid \pi_1 t \mid \pi_2 t \\
-&\mid ({\sim}e) \mid \refl{t}\mid e^+(s) \mid e^-(t) \mid e^=(s,t)\\
+&\mid P \lra Q \mid A \LRA B \mid G \gequiv H \mid (\Pi x {:} A) B \mid (\Sigma x {:} A) B \\
+&\mid x \mid \ttt \mid \lambda x {:}A.t \mid s t \mid (s,t) \mid \pi_1 t \mid \pi_2 t \\
+&\mid ({\sim}e) \mid e^+(t) \mid e^-(t) \mid \refl{t}\\
 &\mid \sta^{\sta} \mid \Pi^* [x,x',x^*] {:} A^*. B^*
 \mid \Sigma^* [x,x',x^*] {:} A^*. B^*
 \mid {\ee{}^*} A^* B^*
@@ -73,16 +83,12 @@ a \ee A a' &\df a \sim_{\idof{A}} a'\\
 \UIC{$e^- : B \to A$}
 \end{prooftree}
 \begin{prooftree}
-\AXC{$\Gamma \vdash a : A \quad  \Gamma \vdash b : B$}
-\AXC{$\Gamma \vdash e : A \eeq_{k+1} B \quad k \in \setof{0,1,2}$}
-\BIC{$\Gamma \vdash e^=(a,b) : (a \ee A e^-(b)) \ee{k} (e^+(a) \ee B b)$}
-\end{prooftree}
-\begin{prooftree}
   \AXC{$\Gamma \vdash A : \sta_k$}
   \AXC{$\Gamma \vdash a : A$}
   \AXC{$\Gamma \vdash k \in \setof{0,1,2}$}
   \TIC{$\Gamma \vdash \refl{a} : a \ee A a$}
 \end{prooftree}
+
 
 \newpage
 \begin{prooftree}
@@ -163,86 +169,70 @@ a \ee A a' &\df a \sim_{\idof{A}} a'\\
     \sim_{B[\vec a^*//\vec x]}  t[\vec a'/\vec x]$}
 \DisplayProof
 \]
+\newcommand{\esub}{\between}
+\newcommand{\esubs}{{\between}{\!}^*}
 \[
 \AXC{\phantom{$\Delta[\vec a / \vec x]$}}
-\UIC{$\esub \vdash \Gamma \RA \emptyset$}
+\UIC{$\esub \vdash \Gamma \to \emptyset$}
 \DisplayProof
 \qquad
 \AXC{$[\vec a/\vec x] \vdash \Gamma \RA \Delta$}
-\AXC{$\Gamma, \Delta[\vec a/\vec x] \vdash   b :
+\AXC{$\Gamma, \Delta[\vec a/\vec x] \vdash   b[\vec a/\vec x] :
   B[\vec a/\vec x]$}
 \BIC{$[\vec a, b / \vec x, y] \vdash \Gamma \RA \Delta, y:B$}
 \DisplayProof
 \]
 \[
 \AXC{\phantom{$\Delta[\vec a / \vec x]$}}
-\UIC{$\esubs :\esub \simeq \esub \vdash \Gamma \RA \emptyset$}
+\UIC{$\esubs :\esub \simeq \esub \vdash \Gamma \to \emptyset$}
 \DisplayProof
 \qquad
 \AXC{$\Bigg\{\begin{aligned}[]
-[\vec a, b/\vec x,y], [\vec a', b'/\vec x,y] &\vdash \Gamma \RA \Delta, y:B\\
-[\vec a^*//\vec x] : [\vec a/\vec x] \simeq [\vec a'/\vec x]
-&\vdash \Gamma \RA \Delta \\
-\Gamma, \Delta[\vec a^*//\vec x] &\vdash   b^* :
-  b \sim_{B[\vec a^*//\vec x]} b'
+[\vec a, b/\vec x,y] &\vdash \Gamma \RA \Delta, y:B \\
+[\vec a', b'/\vec x,y] &\vdash \Gamma \RA \Delta, y:B
 \end{aligned} \Bigg\}
 $}
-\UIC{$[\vec a^*, b^* // \vec x, y] : [\vec a,b/\vec x,y] \simeq [\vec
-  a',b'/\vec x,y] \vdash \Gamma \RA \Delta, y:B$}
+\noLine
+\UIC{$[\vec a^*//\vec x] : [\vec a/\vec x] \simeq [\vec a'/\vec x]
+: \Gamma \RA \Delta$}
+\noLine
+\UIC{$\Gamma, \Delta[\vec a^*//\vec x] \vdash   b^* :
+  b \simeq_{B[\vec a^*//\vec x]} b'$}
+\UIC{$[\vec a^*, b^* // \vec x, y] : [\vec a/\vec x] \simeq [\vec
+  a'/\vec x] \vdash \Gamma \RA \Delta, y:B$}
 \DisplayProof
 \]
-\newpage
+\end{document}
 
 \begin{prooftree}
-\AXC{$k \in \setof{0,1,2}$}
-\UIC{$\Gamma \vdash \sta_{k}^* : \sta_{k} \ee{k+1} \sta_{k}$}
+\AXC{$$}
+\UIC{$\Gamma \vdash \sta^* : \sta \ee{} \sta$}
 \end{prooftree}
 \begin{prooftree}
 \AXC{$\left.\begin{cases}
-\Gamma \vdash A:*_k\\
-\Gamma \vdash A':*_k\\
-\Gamma \vdash A^* : A \ee{k} A'
+\Gamma \vdash A:*\\
+\Gamma \vdash A':*\\
+\Gamma \vdash A^* : A \ee{} A'
 \end{cases}\right\}$}
 \AXC{$\left.\begin{cases}
-\phantom{x'{:}A',x^*{:}x {\sim_{A^*}} x'}\Gamma, x:A\;\: \vdash B:*_k\\
-\phantom{x'{:}A',x^*{:}x {\sim_{A^*}} x'}\Gamma, x':A'\!\!\: \vdash B':*_k\\
-\Gamma, x{:}A, x'{:}A', x^*:x {\sim_{A^*}} x' \vdash B^* : B \ee{k} B'
-\end{cases}\right\} \qquad k \in \setof{0,1,2}$}
-\BIC{$\Gamma \vdash \Pi^*[x,x',x^*]: A^*.\, B^* : \Pi x{:}A.B \ee{k} \Pi x'{:}A'.B'$}
+\phantom{x'{:}A',x^*{:}x {\sim_{A^*}} x'}\Gamma, x:A\;\: \vdash B:*\\
+\phantom{x'{:}A',x^*{:}x {\sim_{A^*}} x'}\Gamma, x':A'\!\!\: \vdash B':*\\
+\Gamma, x{:}A, x'{:}A', x^*:x {\sim_{A^*}} x' \vdash B^* : B \ee{} B'
+\end{cases}\right\}$}
+\BIC{$\Gamma \vdash \Pi^*[x,x',x^*]: A^*.\, B^* : \Pi x{:}A.B \ee{} \Pi x'{:}A'.B'$}
 \noLine
-\UIC{$\Gamma \vdash \Sigma^*[x,x',x^*]: A^*.\, B^* : \Sigma x{:}A.B \ee{k} \Sigma x'{:}A'.B'$}
+\UIC{$\Gamma \vdash \Sigma^*[x,x',x^*]: A^*.\, B^* : \Sigma x{:}A.B \ee{} \Sigma x'{:}A'.B'$}
 \end{prooftree}
 \begin{prooftree}
   \AXC{$\left.\begin{cases}
-\Gamma \vdash A:*_k\\
-\Gamma \vdash A':*_k\\
-\Gamma \vdash A^* : A \ee{k} A'
+\Gamma \vdash A:*\\
+\Gamma \vdash A':*\\
+\Gamma \vdash A^* : A \ee{} A'
 \end{cases}\right\}$}
 \AXC{$\left.\begin{cases}
-\Gamma \vdash B:*_k\\
-\Gamma \vdash B':*_k\\
-\Gamma \vdash B^* : B \ee{k} B'
+\Gamma \vdash B:*\\
+\Gamma \vdash B':*\\
+\Gamma \vdash B^* : B \ee{} B'
 \end{cases}\right\}$}
-\BIC{$\Gamma \vdash \seq A^* B^* : (A \ee{k} B) \ee{k} (A' \ee{k} B')$}
+\BIC{$\Gamma \vdash \seq A^* B^* : (A \ee{} B) \ee{} (A' \ee{} B')$}
 \end{prooftree}
-
-\subsubsection*{Computation}
-
-\begin{align*}
-  (\lambda x{:}A.b)a &\rrule b[a/x]\\
-  \pi_i(s_1,s_2) &\rrule s_i\\
-  x : \unitt &\rrule \ttt\\
-\\
-    A \sim_{\sta^*_k} B &\rrule A \ee{k} B\qquad\qquad (k \in \setof{0,1,2})\\
-    f \sim_{\Pi^* [x,x',x^*] : A^*\!. B^*} f' &\rrule \Pi a{:}A \Pi a'{:}A' \Pi a^* : a
-    \sim_{A^*} a'.\ f x \sim_{B^*[a/x,a'/x',a^*/x^*]} f' x'\\
-    p \sim_{\Sigma^* [x,x',x^*] : A^*\!. B^*} p' &\rrule \Sigma a^* : \pi_1 p \sim_{A^*}
-    \pi_1 p'.\ \pi_2 p \sim_{B^*[\pi_1 p/x, \pi_1 p'/x', a^*/x^*]}
-    \pi_2 p'\\
-    e \sim_{\ee{}^* A^* B^*} e' &\rrule \Pi a {:}A \Pi a'{:}A' \Pi a^* : a
-    \sim_{A^*} a'\\
-    &\hspace{1.65cm} \Pi b{:}B \Pi b'{:}B' \,\Pi b^* : b \sim_{B^*}
-    b'.\ (a \sim_e b) \ee{} (a' \sim_{e'} b')
-\end{align*}
-
-\end{document}

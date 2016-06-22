@@ -9,7 +9,6 @@ open import EqSim
 infixl 70 _,,_
 data Context : Set
 ⟦_⟧C : Context → Set
-
 -- The collection of contexts Γ
 data Context where
   〈〉 : Context

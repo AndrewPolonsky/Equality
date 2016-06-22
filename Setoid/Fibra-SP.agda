@@ -1,6 +1,6 @@
 module Setoid.Fibra-SP where
 
-open import Prop
+open import prop
 open import Setoid.Product
 open import Setoid.Function
 

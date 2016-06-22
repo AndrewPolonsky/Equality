@@ -2,7 +2,7 @@
 
 module Setoid.Isomorphism where
 
-open import Prop
+open import prop
 open import Setoid
 open import Setoid.Product
 open import Setoid.Function
@@ -12,8 +12,8 @@ open import Setoid.Sigma-SP
 record Iso (S S' : Setoid) : Set where
   field
     R : FibSP (PRODS S S')
-    R+ : ∀ (x : El S)  → ContrS (Sigma-SP S' (FibSP-p2 R x))
-    R- : ∀ (y : El S') → ContrS (Sigma-SP S  (FibSP-p1 R y))
+    R+ : ∀ (x : El S)  → ContrS (Sigma-SP S' (FibSP-p2 {S} {S'} R x))
+    R- : ∀ (y : El S') → ContrS (Sigma-SP S  (FibSP-p1 {S} {S'} R y))
 
 infix 20 _~<_>_
 _~<_>_ : ∀ {S S'} → El S → (i : Iso S S') → El S' → Set
@@ -56,7 +56,7 @@ ISO : Setoid → Setoid → Setoid
 ISO S S' = record {
   El = Iso S S';
   E = λ i j → ∀ x y → (Fib (Iso.R i) (x , y)) ⇔ (Fib (Iso.R j) (x , y));
-  r = λ i → λ x y → refl_p;
+  r = λ i → λ x y → refl-p;
   E* = λ f-is-g h-is-k → flip f-is-g h-is-k }
 
 _~*<_>_ : ∀ {S S'} {x x' : El S} {i i' : Iso S S'} {y y' : El S'} → E S x x' → E (ISO S S') i i' → E S' y y' → (x ~< i > y) ⇔ (x' ~< i' > y')

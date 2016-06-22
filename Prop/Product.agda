@@ -1,7 +1,7 @@
-module Prop.Product where
+module prop.Product where
 
 open import Data.Product public
-open import Prop public
+open import prop public
 
 PRODP : Set → Set → Set
 PRODP p q = p × q

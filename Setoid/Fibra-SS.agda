@@ -1,8 +1,9 @@
 module Setoid.Fibra-SS where
 
 open import Data.Product
-open import Prop
+open import prop
 open import Setoid
+open import Setoid.Isomorphism
 
 record Fibra-SS (B : Setoid) : Set where
   field

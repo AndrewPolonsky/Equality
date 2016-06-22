@@ -1,7 +1,7 @@
 module Setoid.Product where
 
 open import Data.Product public
-open import Prop.Product
+open import prop.Product
 open import Setoid public
 open import Setoid.Function
 

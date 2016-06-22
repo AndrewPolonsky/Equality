@@ -1,7 +1,7 @@
 module Setoid.Function where
 
 open import Data.Product
-open import Prop
+open import prop
 open import Setoid
 
 record FunS (S S' : Setoid) : Set where
@@ -21,4 +21,4 @@ FUNS S S' = record {
   E = λ f g → ∀ x x' → E S x x' → E S' (f · x) (g · x');
   r = FunS.app1 ;
   E* = λ {f} {f'} f* {g} {g'} g* → 
-    ∀* (λ x → ∀* (λ x' → imp* refl_p (E* S' (f* x x (r S x)) (g* x' x' (r S x'))))) }
+    ∀* (λ x → ∀* (λ x' → imp* refl-p (E* S' (f* x x (r S x)) (g* x' x' (r S x'))))) }
